@@ -24,15 +24,15 @@ import urllib.parse
 URL = "http://lamprocles.cs.washington.edu/bc/bcpyserv/bc-validate.php"
 
 def validate_move(starting_square, board1_string, board2_string):
-    params = {'service':'validate',\
-            'move':starting_square,\
-            'state1':board1_string,\
-            'state2':board2_string}
+    params = {'service':'validate',
+              'move':starting_square,
+              'state1':board1_string,
+              'state2':board2_string}
     return handle_query(params)
 
 def any_moves(board_string, whose_move=0):
-    params = {'service':'anymoves',\
-            'whose_move':whose_move,\
+    params = {'service':'anymoves',
+            'whose_move':whose_move,
             'state1':board_string}
     return handle_query(params)
 
