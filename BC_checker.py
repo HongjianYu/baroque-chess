@@ -9,8 +9,8 @@ LAMPROCLES (was xanthippe).
 The two methods are:
 (a) validate_move (for verifying that a given move is legal)
 (b) any_moves (for determining if there are ANY legal 
-  moves from a given state).  If not, this typically means
-  the game is a draw.
+    moves from a given state).  If not, this typically means
+    the game is a draw.
 
 S. Tanimoto, May 5, 2019. (Based on prev. devel. of
 to_bc_move_validator.py, April 8, 2019)
