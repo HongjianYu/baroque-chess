@@ -4,7 +4,7 @@ The beginnings of an agent that might someday play Baroque Chess.
 '''
 
 import BC_state_etc as BC
-
+import numpy as np
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                           useBasicStaticEval=True, useZobristHashing=False):
