@@ -9,8 +9,8 @@ LAMPROCLES (was xanthippe).
 The two methods are:
 (a) validate_move (for verifying that a given move is legal)
 (b) any_moves (for determining if there are ANY legal 
-  moves from a given state).  If not, this typically means
-  the game is a draw.
+    moves from a given state).  If not, this typically means
+    the game is a draw.
 
 S. Tanimoto, May 5, 2019. (Based on prev. devel. of
 to_bc_move_validator.py, April 8, 2019)
@@ -24,15 +24,15 @@ import urllib.parse
 URL = "http://lamprocles.cs.washington.edu/bc/bcpyserv/bc-validate.php"
 
 def validate_move(starting_square, board1_string, board2_string):
-    params = {'service':'validate',\
-            'move':starting_square,\
-            'state1':board1_string,\
-            'state2':board2_string}
+    params = {'service':'validate',
+              'move':starting_square,
+              'state1':board1_string,
+              'state2':board2_string}
     return handle_query(params)
 
 def any_moves(board_string, whose_move=0):
-    params = {'service':'anymoves',\
-            'whose_move':whose_move,\
+    params = {'service':'anymoves',
+            'whose_move':whose_move,
             'state1':board_string}
     return handle_query(params)
 
