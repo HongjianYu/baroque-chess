@@ -122,15 +122,15 @@ def runGame():
                 
         # Some move was returned, so let's find out if it was valid.
         try:
-          move, newState = moveAndState
-          startsq, endsq = move
-          i,j=startsq
-          ii,jj=endsq
+            move, newState = moveAndState
+            startsq, endsq = move
+            i,j=startsq
+            ii,jj=endsq
         except Exception as e:
-           print("The moveAndState value did not have the proper form of [move, newState] or")
-           print("the move did not have the proper form such as ((3, 7), (5, 7)).")
-           WINNER = other_side
-           FINISHED = True;
+            print("The moveAndState value did not have the proper form of [move, newState] or")
+            print("the move did not have the proper form such as ((3, 7), (5, 7)).")
+            WINNER = other_side
+            FINISHED = True;
         print(side+"'s move: the "+BC.CODE_TO_INIT[currentState.board[i][j]]+\
               " at ("+str(i)+", "+str(j)+") to ("+str(ii)+", "+str(jj)+").")
         
@@ -177,9 +177,9 @@ def runGame():
 
     print("Game over.")
     if (WINNER=="not yet known") or (WINNER == "DRAW"):
-      print("The outcome is a DRAW.  Nobody wins.")
+        print("The outcome is a DRAW.  Nobody wins.")
     else:
-      print("Congratulations to the winner: "+WINNER)
+        print("Congratulations to the winner: "+WINNER)
 
 
 import sys
