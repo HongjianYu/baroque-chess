@@ -4,6 +4,11 @@ The beginnings of an agent that might someday play Baroque Chess.
 '''
 
 import BC_state_etc as BC
+import numpy as np
+
+CODE_TO_VAL = { 0:0,
+    2:-1, 4:-2, 6:-2, 8:-2, 10:-2, 12:-100, 14:-2,
+    3:1, 5:2, 7:2, 9:2, 11:2, 13:100, 15:2}
 
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
@@ -55,7 +60,11 @@ def basicStaticEval(state):
     '''Use the simple method for state evaluation described in the spec.
     This is typically used in parameterized_minimax calls to verify
     that minimax and alpha-beta pruning work correctly.'''
-    pass
+    res = 0
+    for i in range(8):
+        for j in range(8):
+            res += CODE_TO_VAL[state.board[i][j]]
+    return res
 
 
 def staticEval(state):
