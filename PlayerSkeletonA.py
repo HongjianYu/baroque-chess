@@ -55,6 +55,7 @@ def king(currentState, rank, file):
                 new_state = bcs.BC_state(currentState.board, currentState.whose_move)
                 new_state.board[rank][file] = 0
                 new_state.board[new_rank][new_file] = bcs.WHITE_KING - (1 - currentState.whose_move)
+                new_state.whose_move = 1 - currentState.whose_move
                 new_states.append(new_state)
     return new_states
 
@@ -93,6 +94,28 @@ def is_immobilized(currentState, rank, file):
             return True
     return False
 
+# radix sort
+def radix(states_with_moves:list)->list:
+    bin0 = [[], [], [], [], [], [], []]
+    bin1 = [[], [], [], [], [], [], []]
+    for i in range(len(states_with_moves)):
+        # in reverse order(7, 6, 5, 4, 3, 2, 1, 0)
+        # states_with_moves[i][0][0]:
+        # [i]: the i-th st_w_mov
+        # [0]: first item in st_w_mov[i], which is a tuple
+        # [0]: first item in the st_w_mov[i][0], which is the rank(1, 2, ...)
+        bin0[7 - states_with_moves[i][0][0]] += states_with_moves[i]
+
+    # traverse list
+    for i in range(8):
+        for j in range(len(bin0[i])):
+            bin1[bin0[i][j][0][1]] += bin0[i][j]
+
+    # final result
+    for i in range(8):
+        res += bin1[i]
+
+    return res
 
 def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
