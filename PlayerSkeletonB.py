@@ -4,10 +4,10 @@ But don't use this file as your agent starter.
 Use PlayerSkeletonA, which has more of the function stubs in place.
 '''
 
-import BC_state_etc as BC
+import BC_state_etc as bcs
 
 
-def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
+def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
@@ -17,7 +17,7 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3, \
 def makeMove(currentState, currentRemark, timelimit):
     # Compute the new state for a move.
     # This is a placeholder that just copies the current state.
-    newState = BC.BC_state(currentState.board)
+    newState = bcs.BC_state(currentState.board)
 
     # Fix up whose turn it will be.
     newState.whose_move = 1 - currentState.whose_move

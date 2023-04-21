@@ -1,5 +1,4 @@
 '''BaroqueGameMaster.py
-
 S. Tanimoto, May 5, 2019.
 Has support for validation of moves, via a web service.
 (Updated web address to lamprocles, April 5, 2023).

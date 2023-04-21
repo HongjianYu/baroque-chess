@@ -1,11 +1,9 @@
 '''PlayerSkeletonA.py
 The beginnings of an agent that might someday play Baroque Chess.
-
 '''
 
-import BC_checker as BCC
-import BC_state_etc as BCS
-import numpy as np
+import BC_checker as bcc
+import BC_state_etc as bcs
 
 CODE_TO_VAL = {0: 0,
                2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
@@ -25,14 +23,14 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
 
 def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
-    if ply == 0 or BCC.any_moves(currentState.__repr__()):
+    if ply == 0 or bcc.any_moves(currentState.__repr__()):
         return stat_dict
-    max_move = currentState.whose_move == BCS.WHITE
+    max_move = currentState.whose_move == bcs.WHITE
     provisional = -100000 if max_move else 100000
 
 
 def successors(currentState):
-    move_indicator = 0 if currentState.whose_move == BCS.WHITE else 1
+    move_indicator = 0 if currentState.whose_move == bcs.WHITE else 1
 
 
 def pincer(currentState, rank, file):
@@ -68,7 +66,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
     # You should implement an anytime algorithm based on IDDFS.
 
     # The following is a placeholder that just copies the current state.
-    newState = BC.BC_state(currentState.board)
+    newState = bcs.BC_state(currentState.board)
 
     # Fix up whose turn it will be.
     newState.whose_move = 1 - currentState.whose_move

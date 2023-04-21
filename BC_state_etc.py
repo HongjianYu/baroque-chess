@@ -34,6 +34,7 @@ We are following these rules:
 
     An imitator can imitate at most one piece during a move.
 '''
+
 BLACK = 0
 WHITE = 1
 NORTH = 0; SOUTH = 1; WEST = 2; EAST = 3; NW = 4; NE = 5; SW = 6; SE = 7
@@ -41,12 +42,12 @@ NORTH = 0; SOUTH = 1; WEST = 2; EAST = 3; NW = 4; NE = 5; SW = 6; SE = 7
 # Used in parsing the initial state and in testing:
 
 INIT_TO_CODE = {'p':2, 'P':3, 'c':4, 'C':5, 'l':6, 'L':7, 'i':8, 'I':9,
-    'w':10, 'W':11, 'k':12, 'K':13, 'f':14, 'F':15, '-':0}
+                'w':10, 'W':11, 'k':12, 'K':13, 'f':14, 'F':15, '-':0}
 
 # Used in printing out states:
 
 CODE_TO_INIT = {0:'-',2:'p',3:'P',4:'c',5:'C',6:'l',7:'L',8:'i',9:'I',
-    10:'w',11:'W',12:'k',13:'K',14:'f',15:'F'}
+                10:'w',11:'W',12:'k',13:'K',14:'f',15:'F'}
 
 # Global variables representing the various types of pieces on the board:
 
@@ -69,6 +70,7 @@ WHITE_FREEZER     = 15
 
 def who(piece): return piece % 2  # BLACK's pieces are even; WHITE's are odd.
 
+
 def parse(bs): # bs is board string
     '''Translate a board string into the list of lists representation.'''
     b = [[0,0,0,0,0,0,0,0] for r in range(8)]
@@ -79,6 +81,7 @@ def parse(bs): # bs is board string
         for jx in range(8):
             b[iy][jx] = INIT_TO_CODE[rss[jx]]
     return b
+
 
 INITIAL = parse('''
 c l i w k i l f
@@ -120,7 +123,8 @@ class BC_state:
             return True
         except Exception as e:
             return False
-      
+
+
 def test_starting_board():
     init_state = BC_state(INITIAL, WHITE)
     print(init_state)
