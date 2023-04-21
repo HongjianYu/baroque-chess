@@ -2,8 +2,7 @@
 The beginnings of an agent that might someday play Baroque Chess.
 '''
 
-import BC_checker as bcc
-import BC_state_etc as bcs
+import BC_state_etc as BC
 
 CODE_TO_VAL = {0: 0,
                2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
@@ -52,9 +51,9 @@ def king(currentState, rank, file):
         if is_within_board_range(new_rank, new_file):
             new_code = currentState.board[new_rank][new_file]
             if not is_ally(new_code, currentState.whose_move):
-                new_state = bcs.BC_state(currentState.board, currentState.whose_move)
+                new_state = BC.BC_state(currentState.board, currentState.whose_move)
                 new_state.board[rank][file] = 0
-                new_state.board[new_rank][new_file] = bcs.WHITE_KING - (1 - currentState.whose_move)
+                new_state.board[new_rank][new_file] = BC.WHITE_KING - (1 - currentState.whose_move)
                 new_states.append(new_state)
     return new_states
 
@@ -89,16 +88,31 @@ def is_immobilized(currentState, rank, file):
     for i in range(8):
         h_dir, v_dir = DIRECTIONS[i]
         new_rank, new_file = rank + h_dir, file + v_dir
-        if currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == bcs.BLACK_FREEZER:
+        if currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == BC.BLACK_FREEZER:
             return True
     return False
 
 
+# Possible moves in one direction, leaper has one more possible landing square behind an enemy piece
+def explore_in_one_direction(currentState, rank, file, h_dir, v_dir, is_leaper):
+    moves = []
+    new_rank, new_file = rank + h_dir, file + v_dir
+    while is_within_board_range(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
+        moves.append((new_rank, new_file))
+        new_rank, new_file = new_rank + h_dir, new_file + v_dir
+    if is_leaper:
+        next_rank, next_file = new_rank + h_dir, new_file + v_dir
+        if is_within_board_range(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
+                is_enemy(currentState.board[new_rank][new_file], currentState.whose_move):
+            moves.append((next_rank, next_file))
+    return moves
+
+
 def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
-    if ply == 0 or bcc.any_moves(currentState.__repr__()):
+    if ply == 0:
         return stat_dict
-    provisional = -100000 if currentState.whose_move == bcs.WHITE else 100000
+    provisional = -100000 if currentState.whose_move == BC.WHITE else 100000
 
 
 def successors(currentState):
@@ -121,7 +135,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
     # You should implement an anytime algorithm based on IDDFS.
 
     # The following is a placeholder that just copies the current state.
-    newState = bcs.BC_state(currentState.board)
+    newState = BC.BC_state(currentState.board)
 
     # Fix up whose turn it will be.
     newState.whose_move = 1 - currentState.whose_move
