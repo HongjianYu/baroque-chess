@@ -60,6 +60,8 @@ def king(currentState, rank, file):
 
 
 def freezer(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
     pass
 
 
