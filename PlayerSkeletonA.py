@@ -3,18 +3,63 @@ The beginnings of an agent that might someday play Baroque Chess.
 
 '''
 
-import BC_state_etc as BC
+import BC_checker as BCC
+import BC_state_etc as BCS
 import numpy as np
 
-CODE_TO_VAL = { 0:0,
-    2:-1, 4:-2, 6:-2, 8:-2, 10:-2, 12:-100, 14:-2,
-    3:1, 5:2, 7:2, 9:2, 11:2, 13:100, 15:2}
+CODE_TO_VAL = {0: 0,
+               2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
+               3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
 
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
+    stat_dict = {"CURRENT_STATE_VAL": basicStaticEval(currentState),
+                 "currentState": 0,
+                 "N_STATIC_EVALS": 1,
+                 "N_CUTOFFS": 0}
+    minimax(currentState, stat_dict, alphaBeta, ply, useBasicStaticEval, useZobristHashing)
+
+
+def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
+            useBasicStaticEval=True, useZobristHashing=False):
+    if ply == 0 or BCC.any_moves(currentState.__repr__()):
+        return stat_dict
+    max_move = currentState.whose_move == BCS.WHITE
+    provisional = -100000 if max_move else 100000
+
+
+def successors(currentState):
+    move_indicator = 0 if currentState.whose_move == BCS.WHITE else 1
+
+
+def pincer(currentState, rank, file):
+    pass
+
+
+def coordinator(currentState, rank, file):
+    pass
+
+
+def leaper(currentState, rank, file):
+    pass
+
+
+def imitator(currentState, rank, file):
+    pass
+
+
+def withdrawer(currentState, rank, file):
+    pass
+
+
+def king(currentState, rank, file):
+    pass
+
+
+def freezer(currentState, rank, file):
     pass
 
 
