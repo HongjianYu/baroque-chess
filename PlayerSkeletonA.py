@@ -65,6 +65,10 @@ def freezer(currentState, rank, file):
     pass
 
 
+VAL_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
+               3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
+
+
 # True if the coordinate is legal
 def is_within_board_range(rank, file):
     return 0 <= rank < 8 and 0 <= file < 8
