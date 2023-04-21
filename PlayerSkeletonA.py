@@ -93,8 +93,24 @@ def is_immobilized(currentState, rank, file):
             return True
     return False
 
+
+# Possible moves in one direction, leaper has one more possible landing square behind an enemy piece
+def explore_in_one_direction(currentState, rank, file, h_dir, v_dir, is_leaper):
+    moves = []
+    new_rank, new_file = rank + h_dir, file + v_dir
+    while is_within_board_range(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
+        moves.append((new_rank, new_file))
+        new_rank, new_file = new_rank + h_dir, new_file + v_dir
+    if is_leaper:
+        next_rank, next_file = new_rank + h_dir, new_file + v_dir
+        if is_within_board_range(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
+                is_enemy(currentState.board[new_rank][new_file], currentState.whose_move):
+            moves.append((next_rank, next_file))
+    return moves
+
+
 # radix sort
-def radix(states_with_moves:list)->list:
+def radix(states_with_moves: list) -> list:
     bin0 = [[], [], [], [], [], [], []]
     bin1 = [[], [], [], [], [], [], []]
     for i in range(len(states_with_moves)):
@@ -111,24 +127,10 @@ def radix(states_with_moves:list)->list:
             bin1[bin0[i][j][0][1]] += bin0[i][j]
 
     # final result
+    res = []
     for i in range(8):
         res += bin1[i]
-
     return res
-
-# Possible moves in one direction, leaper has one more possible landing square behind an enemy piece
-def explore_in_one_direction(currentState, rank, file, h_dir, v_dir, is_leaper):
-    moves = []
-    new_rank, new_file = rank + h_dir, file + v_dir
-    while is_within_board_range(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
-        moves.append((new_rank, new_file))
-        new_rank, new_file = new_rank + h_dir, new_file + v_dir
-    if is_leaper:
-        next_rank, next_file = new_rank + h_dir, new_file + v_dir
-        if is_within_board_range(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
-                is_enemy(currentState.board[new_rank][new_file], currentState.whose_move):
-            moves.append((next_rank, next_file))
-    return moves
 
 
 def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
