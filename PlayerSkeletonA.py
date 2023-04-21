@@ -9,6 +9,95 @@ CODE_TO_VAL = {0: 0,
                2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
                3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
 
+DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
+
+
+def pincer(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
+    pass
+
+
+def coordinator(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
+    pass
+
+
+def leaper(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
+    pass
+
+
+def imitator(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
+    pass
+
+
+def withdrawer(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
+    pass
+
+
+def king(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
+    new_states = []
+    for i in range(8):
+        h_dir, v_dir = DIRECTIONS[i]
+        new_rank, new_file = rank + h_dir, file + v_dir
+        if is_within_board_range(new_rank, new_file):
+            new_code = currentState.board[new_rank][new_file]
+            if not is_ally(new_code, currentState.whose_move):
+                new_state = bcs.BC_state(currentState.board, currentState.whose_move)
+                new_state.board[rank][file] = 0
+                new_state.board[new_rank][new_file] = bcs.WHITE_KING - (1 - currentState.whose_move)
+                new_states.append(new_state)
+    return new_states
+
+
+def freezer(currentState, rank, file):
+    pass
+
+
+# True if the coordinate is legal
+def is_within_board_range(rank, file):
+    return 0 <= rank < 8 and 0 <= file < 8
+
+
+# True if there is an ally in this square
+def is_ally(code, whose_move):
+    return code != 0 and (code - whose_move) % 2 == 0
+
+
+# True if there is an enemy in this square
+def is_enemy(code, whose_move):
+    return code != 0 and (code - whose_move) % 2 == 1
+
+
+# True if the selected piece is immobilized
+def is_immobilized(currentState, rank, file):
+    for i in range(8):
+        h_dir, v_dir = DIRECTIONS[i]
+        new_rank, new_file = rank + h_dir, file + v_dir
+        if currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == bcs.BLACK_FREEZER:
+            return True
+    return False
+
+
+def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
+            useBasicStaticEval=True, useZobristHashing=False):
+    if ply == 0 or bcc.any_moves(currentState.__repr__()):
+        return stat_dict
+    provisional = -100000 if currentState.whose_move == bcs.WHITE else 100000
+
+
+def successors(currentState):
+    pass
+
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                           useBasicStaticEval=True, useZobristHashing=False):
@@ -19,46 +108,6 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                  "N_STATIC_EVALS": 1,
                  "N_CUTOFFS": 0}
     minimax(currentState, stat_dict, alphaBeta, ply, useBasicStaticEval, useZobristHashing)
-
-
-def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
-            useBasicStaticEval=True, useZobristHashing=False):
-    if ply == 0 or bcc.any_moves(currentState.__repr__()):
-        return stat_dict
-    max_move = currentState.whose_move == bcs.WHITE
-    provisional = -100000 if max_move else 100000
-
-
-def successors(currentState):
-    move_indicator = 0 if currentState.whose_move == bcs.WHITE else 1
-
-
-def pincer(currentState, rank, file):
-    pass
-
-
-def coordinator(currentState, rank, file):
-    pass
-
-
-def leaper(currentState, rank, file):
-    pass
-
-
-def imitator(currentState, rank, file):
-    pass
-
-
-def withdrawer(currentState, rank, file):
-    pass
-
-
-def king(currentState, rank, file):
-    pass
-
-
-def freezer(currentState, rank, file):
-    pass
 
 
 def makeMove(currentState, currentRemark, timelimit=10):

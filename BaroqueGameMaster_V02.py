@@ -85,7 +85,7 @@ def runGame():
         else:
             move_fn = player2.makeMove
             name = player2.nickname()
-        playerResult = timeout(move_fn,args=(currentState, currentRemark, TIME_PER_MOVE), kwargs={}, timeout_duration=TIME_PER_MOVE, default=(None,"I give up!"));
+        playerResult = timeout(move_fn,args=(currentState, currentRemark, TIME_PER_MOVE), kwargs={}, timeout_duration=TIME_PER_MOVE, default=(None,"I give up!"))
         WHITEsTurn = not WHITEsTurn
 
         # Let's analyze the response of the player.
@@ -129,7 +129,7 @@ def runGame():
             print("The moveAndState value did not have the proper form of [move, newState] or")
             print("the move did not have the proper form such as ((3, 7), (5, 7)).")
             WINNER = other_side
-            FINISHED = True;
+            FINISHED = True
         print(side+"'s move: the "+BC.CODE_TO_INIT[currentState.board[i][j]]+\
               " at ("+str(i)+", "+str(j)+") to ("+str(ii)+", "+str(jj)+").")
         
