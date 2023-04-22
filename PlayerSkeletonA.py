@@ -6,15 +6,16 @@ import BC_state_etc as BC
 
 
 def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    # To capture a pincer, an imitator cannot move in diagonal directions
+    # To capture a pincer, an imitator cannot move in diagonal directions, or leap over an enemy
     is_not_moving_in_diag = abs(h_dir) != abs(v_dir)
+    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
 
     def pince_capture_in_one_dir(r0, f0, r1, f1):  # to capture, (r0, f0) is the enemy, (r1, f1) is the ally
         if is_within_board(r1, f1) and \
                 is_enemy(new_state.board[r0][f0], new_state.whose_move) and \
                 is_ally(new_state.board[r1][f1], new_state.whose_move) and \
-                (not is_imitator or (is_not_moving_in_diag and
-                 new_state.board[r0][f0] - (1 - new_state.whose_move) == BC.BLACK_PINCER)):
+                (not is_imitator or is_not_moving_in_diag and is_not_leaping and
+                 new_state.board[r0][f0] - (1 - new_state.whose_move) == BC.BLACK_PINCER):
             new_state.board[r0][f0] = 0
 
     # left
@@ -31,6 +32,9 @@ def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
 
 
 def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
+    # To capture a coordinator, an imitator cannot leap over an enemy
+    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
+
     def find_king():
         for i in range(8):
             for j in range(8):
@@ -39,19 +43,19 @@ def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imit
 
     king_rank, king_file = find_king()
 
-    if (not is_imitator and is_enemy(new_state.board[king_rank][new_file], new_state.whose_move) or
-            new_state.board[king_rank][new_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR):
+    if not is_imitator and is_enemy(new_state.board[king_rank][new_file], new_state.whose_move) or is_not_leaping and \
+            new_state.board[king_rank][new_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
         new_state[king_rank][new_file] = 0
 
-    if (not is_imitator and is_enemy(new_state.board[new_rank][king_file], new_state.whose_move) or
-            new_state.board[new_rank][king_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR):
+    if not is_imitator and is_enemy(new_state.board[new_rank][king_file], new_state.whose_move) or is_not_leaping and \
+            new_state.board[new_rank][king_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
         new_state[new_rank][king_file] = 0
 
 
 def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     r_behind, f_behind = new_rank - h_dir, new_file - v_dir
-    if (not is_imitator and is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move) or
-            new_state.board[r_behind][f_behind] - (1 - new_state.whose_move) == BC.BLACK_LEAPER):
+    if not is_imitator and is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move) or \
+            new_state.board[r_behind][f_behind] - (1 - new_state.whose_move) == BC.BLACK_LEAPER:
         new_state.board[r_behind][f_behind] = 0
 
 
@@ -65,9 +69,13 @@ def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitato
 
 
 def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
+    # To capture a withdrawer, an imitator cannot leap over an enemy
+    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
+
     r_behind, f_behind = rank - h_dir, file - v_dir
     if is_within_board(r_behind, f_behind) and \
             (not is_imitator and is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move) or
+             is_not_leaping and
              new_state.board[r_behind][f_behind] - (1 - new_state.whose_move) == BC.BLACK_WITHDRAWER):
         new_state.board[r_behind][f_behind] = 0
 
