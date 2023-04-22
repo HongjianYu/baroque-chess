@@ -5,13 +5,17 @@ The beginnings of an agent that might someday play Baroque Chess.
 import BC_state_etc as BC
 
 
-def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     # (r0, f0) is the enemy, (r1, f1) is the ally
     def helper_capture(r0, f0, r1, f1):
         if is_within_board_range(r0, f0) and is_within_board_range(r1, f1) \
             and is_enemy(new_state.board[r0][f0], new_state.whose_move) \
             and is_ally(new_state.board[r1][f1], new_state.whose_move):
-                new_state.board[r0][f0] = 0
+                if is_imitator:
+                    if new_state.board[r0][f0] == BC.WHITE_PINCER or \
+                       new_state.board[r0][f0] == BC.BLACK_PINCER:
+                        new_state.board[r0][f0] = 0
+                else: new_state.board[r0][f0] = 0
     # left
     helper_capture(new_rank, new_file - 1, new_rank, new_file - 2)
 
@@ -26,7 +30,7 @@ def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
 
 
 
-def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     # find the location of the king
     king_loc = (-1, -1)
     for i in range(8):
@@ -37,11 +41,19 @@ def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
                 king_loc = (i, j)
 
     if is_enemy(new_state.board[new_rank][king_loc[1]], new_state.whose_move):
-        new_state[new_rank][king_loc[1]] = 0
+        if is_imitator:
+            if new_state.board[new_rank][king_loc[1]] == BC.WHITE_COORDINATOR or\
+               new_state.board[new_rank][king_loc[1]] == BC.BLACK_COORDINATOR:
+                new_state[new_rank][king_loc[1]] = 0
+        else: new_state[new_rank][king_loc[1]] = 0
     if is_enemy(new_state.board[king_loc[0]][new_file], new_state.whose_move):
-        new_state[king_loc[0]][new_file] = 0
+        if is_imitator:
+            if new_state.board[king_loc[0]][new_file] == BC.WHITE_COORDINATOR or\
+               new_state.board[king_loc[0]][new_file] == BC.BLACK_COORDINATOR:
+                new_state[king_loc[0]][new_file] = 0
+        else: new_state[king_loc[0]][new_file] = 0
 
-def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     dr, df = new_rank - rank, new_file - file
     r_behind, f_behind = new_rank - h_dir, new_file - v_dir
 
@@ -64,7 +76,11 @@ def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
 
     # combined version (this seems to work for me)
     if is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move):
-            new_state.board[r_behind][f_behind] = 0
+        if is_imitator:
+            if new_state.board[r_behind][f_behind] == BC.WHITE_LEAPER or \
+               new_state.board[r_behind][f_behind] == BC.BLACK_LEAPER:
+                new_state.board[r_behind][f_behind] = 0
+        else: new_state.board[r_behind][f_behind] = 0
 
 
 def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
@@ -72,11 +88,15 @@ def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
 
 
 # Withdrawer capture update
-def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     r_behind, f_behind = rank - h_dir, file - v_dir
     if is_within_board_range(r_behind, f_behind) \
             and is_ally(new_state.board[r_behind][f_behind], new_state.whose_move):  # oppo's ally = enemy
-        new_state.board[r_behind][f_behind] = 0
+        if is_imitator:
+            if new_state.board[r_behind][f_behind] == BC.WHITE_WITHDRAWER or \
+               new_state.board[r_behind][f_behind] == BC.BLACK_WITHDRAWER:
+                new_state.board[r_behind][f_behind] = 0
+        else: new_state.board[r_behind][f_behind] = 0
 
 
 # King capture update
