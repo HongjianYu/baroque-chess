@@ -4,12 +4,6 @@ The beginnings of an agent that might someday play Baroque Chess.
 
 import BC_state_etc as BC
 
-CODE_TO_VAL = {0: 0,
-               2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
-               3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
-
-DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
-
 
 def pincer(currentState, rank, file):
     if is_immobilized(currentState, rank, file):
@@ -35,38 +29,32 @@ def imitator(currentState, rank, file):
     pass
 
 
-def withdrawer(currentState, rank, file):
-    if is_immobilized(currentState, rank, file):
-        return []
-    pass
+# Withdrawer capture update
+def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+    r_behind, f_behind = rank - h_dir, file - v_dir
+    if is_within_board_range(r_behind, f_behind) \
+            and is_ally(new_state.board[r_behind][f_behind], new_state.whose_move):  # oppo's ally = enemy
+        new_state.board[r_behind][f_behind] = 0
 
 
-def king(currentState, rank, file):
-    if is_immobilized(currentState, rank, file):
-        return []
-    new_states = []
-    for i in range(8):
-        h_dir, v_dir = DIRECTIONS[i]
-        new_rank, new_file = rank + h_dir, file + v_dir
-        if is_within_board_range(new_rank, new_file):
-            new_code = currentState.board[new_rank][new_file]
-            if not is_ally(new_code, currentState.whose_move):
-                new_state = BC.BC_state(currentState.board, currentState.whose_move)
-                new_state.board[rank][file] = 0
-                new_state.board[new_rank][new_file] = BC.WHITE_KING - (1 - currentState.whose_move)
-                new_state.whose_move = 1 - currentState.whose_move
-                new_states.append(new_state)
-    return new_states
+# King capture update
+def king(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+    pass  # do nothing
 
 
-def freezer(currentState, rank, file):
-    if is_immobilized(currentState, rank, file):
-        return []
-    pass
+# Freezer capture update
+def freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+    pass  # do nothing
 
 
-VAL_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
-               3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
+CODE_TO_VAL = {0: 0,
+               2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
+               3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
+
+DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
+
+CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
+                3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
 
 
 # True if the coordinate is legal
@@ -86,45 +74,99 @@ def is_enemy(code, whose_move):
 
 # True if the selected piece is immobilized
 def is_immobilized(currentState, rank, file):
+    watch_imitator = currentState.board[rank][file] + (1 - currentState.whose_move) == BC.WHITE_FREEZER
     for i in range(8):
         h_dir, v_dir = DIRECTIONS[i]
         new_rank, new_file = rank + h_dir, file + v_dir
-        if currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == BC.BLACK_FREEZER:
-            return True
+        if is_within_board_range(rank, file):
+            code = currentState.board[new_rank][new_file] - (1 - currentState.whose_move)
+            if code == BC.BLACK_FREEZER or (watch_imitator and code == BC.BLACK_IMITATOR):
+                return True
     return False
 
 
-# Possible moves in one direction, leaper has one more possible landing square behind an enemy piece
-def explore_in_one_direction(currentState, rank, file, h_dir, v_dir, is_leaper):
+# Possible moves in one direction
+# Leaper has one more possible landing square behind an enemy piece
+# King only moves one step forward
+def explore_in_one_dir(currentState, rank, file, h_dir, v_dir, is_leaper, is_king):
     moves = []
     new_rank, new_file = rank + h_dir, file + v_dir
+
+    if is_king:
+        if is_within_board_range(new_rank, new_file) and \
+                not is_ally(currentState.board[new_rank][new_file], currentState.whose_move):
+            moves.append(((rank, file), (new_rank, new_file)))
+        return moves
+
+    # Move one step forward per looping
     while is_within_board_range(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
-        moves.append((new_rank, new_file))
+        moves.append(((rank, file), (new_rank, new_file)))
         new_rank, new_file = new_rank + h_dir, new_file + v_dir
+
     if is_leaper:
         next_rank, next_file = new_rank + h_dir, new_file + v_dir
         if is_within_board_range(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
                 is_enemy(currentState.board[new_rank][new_file], currentState.whose_move):
-            moves.append((next_rank, next_file))
+            moves.append(((rank, file), (next_rank, next_file)))
+
     return moves
 
 
+# The core function to call to generate a report on possible moves of a given piece
+def move_a_piece(currentState, rank, file):
+    if is_immobilized(currentState, rank, file):
+        return []
+
+    # Find what piece this is
+    code = currentState[rank][file]
+    # Find its corresponding capture function
+    piece_func = CODE_TO_FUNC[code]
+
+    # Initialize the direction loop
+    states_with_moves = []
+    directions = [1, 3, 4, 6] if piece_func == pincer else range(8)
+    for i in directions:
+        h_dir, v_dir = DIRECTIONS[i]
+
+        # Get possible moves in one direction
+        moves = explore_in_one_dir(currentState, rank, file, h_dir, v_dir, piece_func == leaper, piece_func == king)
+
+        # Iterate over each move
+        for move in moves:
+            # Deep copy
+            new_state = BC.BC_state(currentState.board, 1 - currentState.whose_move)
+
+            new_rank, new_file = move[1]
+
+            # Update the board
+            new_state.board[rank][file] = 0
+            new_state.board[new_rank][new_file] = code
+            # Piece-dependent capture
+            piece_func(new_state, rank, file, new_rank, new_file, h_dir, v_dir)
+
+            states_with_moves.append((move, new_state))
+
+    return radix(states_with_moves)
+
+
 # radix sort
+# states_with_moves contains elements in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
 def radix(states_with_moves: list) -> list:
-    bin0 = [[], [], [], [], [], [], []]
-    bin1 = [[], [], [], [], [], [], []]
+    bin0 = [[] for i in range(8)]
+    bin1 = [[] for i in range(8)]
     for i in range(len(states_with_moves)):
         # in reverse order(7, 6, 5, 4, 3, 2, 1, 0)
         # states_with_moves[i][0][0]:
         # [i]: the i-th st_w_mov
-        # [0]: first item in st_w_mov[i], which is a tuple
-        # [0]: first item in the st_w_mov[i][0], which is the rank(1, 2, ...)
-        bin0[7 - states_with_moves[i][0][0]] += states_with_moves[i]
+        # [0]: first item in st_w_mov[i], which is a tuple of tuples
+        # [1]: second tuple within the tuple, which is the landing square coordinate
+        # [0]: first item in st_w_mov[i][0][1], which is the rank(1, 2, ...)
+        bin0[7 - states_with_moves[i][0][1][0]].append(states_with_moves[i])
 
     # traverse list
     for i in range(8):
         for j in range(len(bin0[i])):
-            bin1[bin0[i][j][0][1]] += bin0[i][j]
+            bin1[bin0[i][j][0][1][1]].append(bin0[i][j])
 
     # final result
     res = []
