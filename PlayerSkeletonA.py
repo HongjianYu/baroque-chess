@@ -7,106 +7,85 @@ is_imitator = False
 
 
 def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    # (r0, f0) is the enemy, (r1, f1) is the ally
-    def helper_capture(r0, f0, r1, f1):
-        if is_within_board_range(r0, f0) and is_within_board_range(r1, f1) \
-            and is_enemy(new_state.board[r0][f0], new_state.whose_move) \
-            and is_ally(new_state.board[r1][f1], new_state.whose_move):
-                if is_imitator:
-                    if new_state.board[r0][f0] == BC.WHITE_PINCER or \
-                       new_state.board[r0][f0] == BC.BLACK_PINCER:
-                        new_state.board[r0][f0] = 0
-                else: new_state.board[r0][f0] = 0
+    # To capture a pincer, an imitator cannot move in diagonal directions, or leap over an enemy
+    is_not_moving_in_diag = abs(h_dir) != abs(v_dir)
+    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
+
+    def pince_capture_in_one_dir(r0, f0, r1, f1):  # to capture, (r0, f0) is the enemy, (r1, f1) is the ally
+        if is_within_board(r1, f1) and \
+                is_enemy(new_state.board[r0][f0], new_state.whose_move) and \
+                is_ally(new_state.board[r1][f1], new_state.whose_move) and \
+                (not is_imitator or is_not_moving_in_diag and is_not_leaping and
+                 new_state.board[r0][f0] - (1 - new_state.whose_move) == BC.BLACK_PINCER):
+            new_state.board[r0][f0] = 0
+
     # left
-    helper_capture(new_rank, new_file - 1, new_rank, new_file - 2)
+    pince_capture_in_one_dir(new_rank, new_file - 1, new_rank, new_file - 2)
 
     # right
-    helper_capture(new_rank, new_file + 1, new_rank, new_file + 2)
+    pince_capture_in_one_dir(new_rank, new_file + 1, new_rank, new_file + 2)
 
     # up
-    helper_capture(new_rank - 1, new_file, new_rank - 2, new_file)
+    pince_capture_in_one_dir(new_rank - 1, new_file, new_rank - 2, new_file)
 
     # down
-    helper_capture(new_rank + 1, new_file, new_rank + 2, new_file)
-
+    pince_capture_in_one_dir(new_rank + 1, new_file, new_rank + 2, new_file)
 
 
 def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    # find the location of the king
-    king_loc = (-1, -1)
-    for i in range(8):
-        for j in range(8):
-            # not sure whose_move is the coordinator or the oppos
-            # here we take it as ally's: (if coordinator is white, then whose_move is 1)
-            if new_state.board[i][j] == BC.WHITE_KIKG - (1 - new_state.whose_move):
-                king_loc = (i, j)
+    # To capture a coordinator, an imitator cannot leap over an enemy
+    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
 
-    if is_enemy(new_state.board[new_rank][king_loc[1]], new_state.whose_move):
-        if is_imitator:
-            if new_state.board[new_rank][king_loc[1]] == BC.WHITE_COORDINATOR or\
-               new_state.board[new_rank][king_loc[1]] == BC.BLACK_COORDINATOR:
-                new_state[new_rank][king_loc[1]] = 0
-        else: new_state[new_rank][king_loc[1]] = 0
-    if is_enemy(new_state.board[king_loc[0]][new_file], new_state.whose_move):
-        if is_imitator:
-            if new_state.board[king_loc[0]][new_file] == BC.WHITE_COORDINATOR or\
-               new_state.board[king_loc[0]][new_file] == BC.BLACK_COORDINATOR:
-                new_state[king_loc[0]][new_file] = 0
-        else: new_state[king_loc[0]][new_file] = 0
+    def find_king():
+        for i in range(8):
+            for j in range(8):
+                if new_state.board[i][j] + (1 - new_state.whose_move) == BC.WHITE_KING:
+                    return i, j
+
+    king_rank, king_file = find_king()
+
+    if not is_imitator and is_enemy(new_state.board[king_rank][new_file], new_state.whose_move) or is_not_leaping and \
+            new_state.board[king_rank][new_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
+        new_state[king_rank][new_file] = 0
+
+    if not is_imitator and is_enemy(new_state.board[new_rank][king_file], new_state.whose_move) or is_not_leaping and \
+            new_state.board[new_rank][king_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
+        new_state[new_rank][king_file] = 0
+
 
 def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    dr, df = new_rank - rank, new_file - file
     r_behind, f_behind = new_rank - h_dir, new_file - v_dir
-
-    '''
-    # diag
-    if abs(dr) == abs(df):
-        if is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move):
-            new_state.board[r_behind][f_behind] = 0
-
-    # vertical
-    if df == 0 and dr != 0:
-        if is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move):
-            new_state.board[r_behind][f_behind] = 0
-
-    # horizontal
-    if dr == 0 and df != 0:
-        if is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move):
-            new_state.board[r_behind][f_behind] = 0
-    '''
-
-    # combined version (this seems to work for me)
-    if is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move):
-        if is_imitator:
-            if new_state.board[r_behind][f_behind] == BC.WHITE_LEAPER or \
-               new_state.board[r_behind][f_behind] == BC.BLACK_LEAPER:
-                new_state.board[r_behind][f_behind] = 0
-        else: new_state.board[r_behind][f_behind] = 0
+    if not is_imitator and is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move) or \
+            new_state.board[r_behind][f_behind] - (1 - new_state.whose_move) == BC.BLACK_LEAPER:
+        new_state.board[r_behind][f_behind] = 0
 
 
-def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
-    pass
+def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
+    pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
+    coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
+    leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
+    withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
+    king(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
+    freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
 
 
-# Withdrawer capture update
 def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
+    # To capture a withdrawer, an imitator cannot leap over an enemy
+    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
+
     r_behind, f_behind = rank - h_dir, file - v_dir
-    if is_within_board_range(r_behind, f_behind) \
-            and is_ally(new_state.board[r_behind][f_behind], new_state.whose_move):  # oppo's ally = enemy
-        if is_imitator:
-            if new_state.board[r_behind][f_behind] == BC.WHITE_WITHDRAWER or \
-               new_state.board[r_behind][f_behind] == BC.BLACK_WITHDRAWER:
-                new_state.board[r_behind][f_behind] = 0
-        else: new_state.board[r_behind][f_behind] = 0
+    if is_within_board(r_behind, f_behind) and \
+            (not is_imitator and is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move) or
+             is_not_leaping and
+             new_state.board[r_behind][f_behind] - (1 - new_state.whose_move) == BC.BLACK_WITHDRAWER):
+        new_state.board[r_behind][f_behind] = 0
 
 
-# King capture update
-def king(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+def king(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     pass  # do nothing
 
 
-# Freezer capture update
-def freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
+def freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     pass  # do nothing
 
 
@@ -121,7 +100,7 @@ CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawe
 
 
 # True if the coordinate is legal
-def is_within_board_range(rank, file):
+def is_within_board(rank, file):
     return 0 <= rank < 8 and 0 <= file < 8
 
 
@@ -137,13 +116,13 @@ def is_enemy(code, whose_move):
 
 # True if the selected piece is immobilized
 def is_immobilized(currentState, rank, file):
-    watch_imitator = currentState.board[rank][file] + (1 - currentState.whose_move) == BC.WHITE_FREEZER
+    is_freezer = currentState.board[rank][file] + (1 - currentState.whose_move) == BC.WHITE_FREEZER
     for i in range(8):
         h_dir, v_dir = DIRECTIONS[i]
         new_rank, new_file = rank + h_dir, file + v_dir
-        if is_within_board_range(rank, file):
+        if is_within_board(rank, file):
             code = currentState.board[new_rank][new_file] - (1 - currentState.whose_move)
-            if code == BC.BLACK_FREEZER or (watch_imitator and code == BC.BLACK_IMITATOR):
+            if code == BC.BLACK_FREEZER or (is_freezer and code == BC.BLACK_IMITATOR):
                 return True
     return False
 
@@ -151,25 +130,37 @@ def is_immobilized(currentState, rank, file):
 # Possible moves in one direction
 # Leaper has one more possible landing square behind an enemy piece
 # King only moves one step forward
-def explore_in_one_dir(currentState, rank, file, h_dir, v_dir, is_leaper, is_king):
+def explore_in_one_dir(currentState, rank, file, h_dir, v_dir):
+    piece_func = CODE_TO_FUNC[currentState[rank][file]]
+    is_leaper, is_imitator, is_king = piece_func == leaper, piece_func == imitator, piece_func == king
+
     moves = []
     new_rank, new_file = rank + h_dir, file + v_dir
 
+    # Move by a king, to capture or not
     if is_king:
-        if is_within_board_range(new_rank, new_file) and \
+        if is_within_board(new_rank, new_file) and \
                 not is_ally(currentState.board[new_rank][new_file], currentState.whose_move):
             moves.append(((rank, file), (new_rank, new_file)))
         return moves
 
-    # Move one step forward per looping
-    while is_within_board_range(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
+    # Move to an empty square, to capture or not
+    while is_within_board(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
         moves.append(((rank, file), (new_rank, new_file)))
         new_rank, new_file = new_rank + h_dir, new_file + v_dir
 
-    if is_leaper:
+    # Move to capture a king by an imitator
+    if is_imitator and is_within_board(new_rank, new_file) and \
+            new_rank - rank == h_dir and new_file - file == v_dir and \
+            currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == BC.BLACK_KING:
+        moves.append(((rank, file), (new_rank, new_file)))
+
+    # Move to capture a piece by a leaper, or to capture a leaper by an imitator
+    if is_leaper or is_imitator:
         next_rank, next_file = new_rank + h_dir, new_file + v_dir
-        if is_within_board_range(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
-                is_enemy(currentState.board[new_rank][new_file], currentState.whose_move):
+        if is_within_board(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
+                (is_leaper and is_enemy(currentState.board[new_rank][new_file], currentState.whose_move) or
+                 currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == BC.BLACK_LEAPER):
             moves.append(((rank, file), (next_rank, next_file)))
 
     return moves
@@ -192,12 +183,12 @@ def move_a_piece(currentState, rank, file):
         h_dir, v_dir = DIRECTIONS[i]
 
         # Get possible moves in one direction
-        moves = explore_in_one_dir(currentState, rank, file, h_dir, v_dir, piece_func == leaper, piece_func == king)
+        moves = explore_in_one_dir(currentState, rank, file, h_dir, v_dir)
 
         # Iterate over each move
         for move in moves:
             # Deep copy
-            new_state = BC.BC_state(currentState.board, 1 - currentState.whose_move)
+            new_state = BC.BC_state(currentState.board, currentState.whose_move)
 
             new_rank, new_file = move[1]
 
@@ -205,16 +196,16 @@ def move_a_piece(currentState, rank, file):
             new_state.board[rank][file] = 0
             new_state.board[new_rank][new_file] = code
             # Piece-dependent capture
-            piece_func(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
+            piece_func(new_state, rank, file, new_rank, new_file, h_dir, v_dir, False)
+            currentState.whose_move = 1 - currentState.whose_move
 
             states_with_moves.append((move, new_state))
 
-    return radix(states_with_moves)
+    return radix_sort(states_with_moves)
 
 
-# radix sort
 # states_with_moves contains elements in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
-def radix(states_with_moves: list) -> list:
+def radix_sort(states_with_moves: list) -> list:
     bin0 = [[] for i in range(8)]
     bin1 = [[] for i in range(8)]
     for i in range(len(states_with_moves)):
