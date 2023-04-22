@@ -10,7 +10,7 @@ def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
     is_not_moving_in_diag = abs(h_dir) != abs(v_dir)
 
     def pince_capture_in_one_dir(r0, f0, r1, f1):  # to capture, (r0, f0) is the enemy, (r1, f1) is the ally
-        if is_within_board_range(r1, f1) and \
+        if is_within_board(r1, f1) and \
                 is_enemy(new_state.board[r0][f0], new_state.whose_move) and \
                 is_ally(new_state.board[r1][f1], new_state.whose_move) and \
                 (not is_imitator or (is_not_moving_in_diag and
@@ -66,7 +66,7 @@ def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitato
 
 def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     r_behind, f_behind = rank - h_dir, file - v_dir
-    if is_within_board_range(r_behind, f_behind) and \
+    if is_within_board(r_behind, f_behind) and \
             (not is_imitator and is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move) or
              new_state.board[r_behind][f_behind] - (1 - new_state.whose_move) == BC.BLACK_WITHDRAWER):
         new_state.board[r_behind][f_behind] = 0
@@ -91,7 +91,7 @@ CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawe
 
 
 # True if the coordinate is legal
-def is_within_board_range(rank, file):
+def is_within_board(rank, file):
     return 0 <= rank < 8 and 0 <= file < 8
 
 
@@ -111,7 +111,7 @@ def is_immobilized(currentState, rank, file):
     for i in range(8):
         h_dir, v_dir = DIRECTIONS[i]
         new_rank, new_file = rank + h_dir, file + v_dir
-        if is_within_board_range(rank, file):
+        if is_within_board(rank, file):
             code = currentState.board[new_rank][new_file] - (1 - currentState.whose_move)
             if code == BC.BLACK_FREEZER or (is_freezer and code == BC.BLACK_IMITATOR):
                 return True
@@ -130,18 +130,18 @@ def explore_in_one_dir(currentState, rank, file, h_dir, v_dir):
 
     # Move by a king, to capture or not
     if is_king:
-        if is_within_board_range(new_rank, new_file) and \
+        if is_within_board(new_rank, new_file) and \
                 not is_ally(currentState.board[new_rank][new_file], currentState.whose_move):
             moves.append(((rank, file), (new_rank, new_file)))
         return moves
 
     # Move to an empty square, to capture or not
-    while is_within_board_range(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
+    while is_within_board(new_rank, new_file) and currentState.board[new_rank][new_file] == 0:
         moves.append(((rank, file), (new_rank, new_file)))
         new_rank, new_file = new_rank + h_dir, new_file + v_dir
 
     # Move to capture a king by an imitator
-    if is_imitator and is_within_board_range(new_rank, new_file) and \
+    if is_imitator and is_within_board(new_rank, new_file) and \
             new_rank - rank == h_dir and new_file - file == v_dir and \
             currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == BC.BLACK_KING:
         moves.append(((rank, file), (new_rank, new_file)))
@@ -149,7 +149,7 @@ def explore_in_one_dir(currentState, rank, file, h_dir, v_dir):
     # Move to capture a piece by a leaper, or to capture a leaper by an imitator
     if is_leaper or is_imitator:
         next_rank, next_file = new_rank + h_dir, new_file + v_dir
-        if is_within_board_range(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
+        if is_within_board(next_rank, next_file) and currentState.board[next_rank][next_file] == 0 and \
                 (is_leaper and is_enemy(currentState.board[new_rank][new_file], currentState.whose_move) or
                  currentState.board[new_rank][new_file] - (1 - currentState.whose_move) == BC.BLACK_LEAPER):
             moves.append(((rank, file), (next_rank, next_file)))
