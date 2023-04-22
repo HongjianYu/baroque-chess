@@ -53,7 +53,7 @@ def king(currentState, rank, file):
             if not is_ally(new_code, currentState.whose_move):
                 new_state = BC.BC_state(currentState.board, currentState.whose_move)
                 new_state.board[rank][file] = 0
-                new_state.board[new_rank][new_file] = bcs.WHITE_KING - (1 - currentState.whose_move)
+                new_state.board[new_rank][new_file] = BC.WHITE_KING - (1 - currentState.whose_move)
                 new_state.whose_move = 1 - currentState.whose_move
                 new_states.append(new_state)
     return new_states
