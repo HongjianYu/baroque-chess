@@ -107,13 +107,13 @@ def is_enemy(code, whose_move):
 
 # True if the selected piece is immobilized
 def is_immobilized(currentState, rank, file):
-    watch_imitator = currentState.board[rank][file] + (1 - currentState.whose_move) == BC.WHITE_FREEZER
+    is_freezer = currentState.board[rank][file] + (1 - currentState.whose_move) == BC.WHITE_FREEZER
     for i in range(8):
         h_dir, v_dir = DIRECTIONS[i]
         new_rank, new_file = rank + h_dir, file + v_dir
         if is_within_board_range(rank, file):
             code = currentState.board[new_rank][new_file] - (1 - currentState.whose_move)
-            if code == BC.BLACK_FREEZER or (watch_imitator and code == BC.BLACK_IMITATOR):
+            if code == BC.BLACK_FREEZER or (is_freezer and code == BC.BLACK_IMITATOR):
                 return True
     return False
 
