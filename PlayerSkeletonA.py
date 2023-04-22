@@ -268,7 +268,7 @@ def successors(currentState):
                     all_states_with_moves.append(move_a_piece(currentState, i, j))
 
     # all possible moves in the order of the new location of the moved piece
-    return radix(all_states_with_moves)
+    return radix_sort(all_states_with_moves)
 
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
