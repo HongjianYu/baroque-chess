@@ -3,6 +3,7 @@ The beginnings of an agent that might someday play Baroque Chess.
 '''
 
 import BC_state_etc as BC
+is_imitator = False
 
 
 def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
@@ -204,7 +205,7 @@ def move_a_piece(currentState, rank, file):
             new_state.board[rank][file] = 0
             new_state.board[new_rank][new_file] = code
             # Piece-dependent capture
-            piece_func(new_state, rank, file, new_rank, new_file, h_dir, v_dir)
+            piece_func(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
 
             states_with_moves.append((move, new_state))
 
@@ -241,11 +242,42 @@ def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
     if ply == 0:
         return stat_dict
-    provisional = -100000 if currentState.whose_move == BC.WHITE else 100000
+    whose_move = currentState.whose_move
+    provisional = -100000 if whose_move == BC.WHITE else 100000
+
+    # all possible moves that one side can take (move + capture)
+    for s in successors(currentState):
+        # update stat_dict based on the new state s
+        stat_dict['CURRENT_STATE_VAL'] = basicStaticEval(s)
+        stat_dict['N_STATES_EXPANDED'] += 1
+        stat_dict['N_STATIC_EVALS'] += 1
+
+        # Not sure if the updated stat_dict since it's already updated
+        stat_dict = minimax(s, stat_dict, False, ply - 1, True, False)
+
+        if whose_move == BC.WHITE and stat_dict['CURRENT_STATE_VAL'] > provisional \
+        or whose_move == BC.BLACK and stat_dict['CURRENT_STATE_VAL'] < provisional:
+            provisional = stat_dict['CURRENT_STATE_VAL']
+
+        return stat_dict
 
 
 def successors(currentState):
-    pass
+    # all possible moves that one side can take (move + capture)
+    all_states_with_moves = []
+    if currentState.whose_move == BC.WHITE: # WHITE's turn
+        for i in range(8):
+            for j in range(8):
+                if currentState.board[i][j] % 2 == 1: # WHITE piece
+                    all_states_with_moves.append(move_a_piece(currentState, i, j))
+    else: # BLACK's turn
+        for i in range(8):
+            for j in range(8):
+                if currentState.board[i][j] % 2 == 0: # BLACK piece
+                    all_states_with_moves.append(move_a_piece(currentState, i, j))
+
+    # all possible moves in the order of the new location of the moved piece
+    return radix(all_states_with_moves)
 
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
@@ -253,7 +285,7 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
     '''Implement this testing function for your agent's basic
     capabilities here.'''
     stat_dict = {"CURRENT_STATE_VAL": basicStaticEval(currentState),
-                 "currentState": 0,
+                 "N_STATES_EXPANDED": 0,
                  "N_STATIC_EVALS": 1,
                  "N_CUTOFFS": 0}
     minimax(currentState, stat_dict, alphaBeta, ply, useBasicStaticEval, useZobristHashing)
