@@ -14,7 +14,7 @@ def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
                 is_enemy(new_state.board[r0][f0], new_state.whose_move) and \
                 is_ally(new_state.board[r1][f1], new_state.whose_move) and \
                 (not is_imitator or (is_not_moving_in_diag and
-                                     new_state.board[r0][f0] - (1 - new_state.whose_move) == BC.BLACK_PINCER)):
+                 new_state.board[r0][f0] - (1 - new_state.whose_move) == BC.BLACK_PINCER)):
             new_state.board[r0][f0] = 0
 
     # left
@@ -31,7 +31,7 @@ def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
 
 
 def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    def find_king():  # find the location of the king
+    def find_king():
         for i in range(8):
             for j in range(8):
                 if new_state.board[i][j] + (1 - new_state.whose_move) == BC.WHITE_KING:
@@ -57,6 +57,7 @@ def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
 
 def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
+    coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
     leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
     withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
     king(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
