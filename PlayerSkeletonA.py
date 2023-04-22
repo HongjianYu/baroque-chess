@@ -5,27 +5,19 @@ The beginnings of an agent that might someday play Baroque Chess.
 import BC_state_etc as BC
 
 
-def pincer(currentState, rank, file):
-    if is_immobilized(currentState, rank, file):
-        return []
+def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
     pass
 
 
-def coordinator(currentState, rank, file):
-    if is_immobilized(currentState, rank, file):
-        return []
+def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
     pass
 
 
-def leaper(currentState, rank, file):
-    if is_immobilized(currentState, rank, file):
-        return []
+def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
     pass
 
 
-def imitator(currentState, rank, file):
-    if is_immobilized(currentState, rank, file):
-        return []
+def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir):
     pass
 
 
