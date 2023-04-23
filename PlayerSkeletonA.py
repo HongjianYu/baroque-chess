@@ -3,19 +3,20 @@ The beginnings of an agent that might someday play Baroque Chess.
 '''
 
 import BC_state_etc as BC
-is_imitator = False
+
+# This agent implements the imitator move generator
+IMITATOR_CAPTURES_IMPLEMENTED = True
 
 
 def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    # To capture a pincer, an imitator cannot move in diagonal directions, or leap over an enemy
+    # To capture a pincer, an imitator cannot move in diagonal directions
     is_not_moving_in_diag = abs(h_dir) != abs(v_dir)
-    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
 
     def pince_capture_in_one_dir(r0, f0, r1, f1):  # to capture, (r0, f0) is the enemy, (r1, f1) is the ally
         if is_within_board(r1, f1) and \
                 is_enemy(new_state.board[r0][f0], new_state.whose_move) and \
                 is_ally(new_state.board[r1][f1], new_state.whose_move) and \
-                (not is_imitator or is_not_moving_in_diag and is_not_leaping and
+                (not is_imitator or is_not_moving_in_diag and
                  new_state.board[r0][f0] - (1 - new_state.whose_move) == BC.BLACK_PINCER):
             new_state.board[r0][f0] = 0
 
@@ -33,9 +34,6 @@ def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
 
 
 def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    # To capture a coordinator, an imitator cannot leap over an enemy
-    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
-
     def find_king():
         for i in range(8):
             for j in range(8):
@@ -44,11 +42,11 @@ def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imit
 
     king_rank, king_file = find_king()
 
-    if not is_imitator and is_enemy(new_state.board[king_rank][new_file], new_state.whose_move) or is_not_leaping and \
+    if not is_imitator and is_enemy(new_state.board[king_rank][new_file], new_state.whose_move) or \
             new_state.board[king_rank][new_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
         new_state[king_rank][new_file] = 0
 
-    if not is_imitator and is_enemy(new_state.board[new_rank][king_file], new_state.whose_move) or is_not_leaping and \
+    if not is_imitator and is_enemy(new_state.board[new_rank][king_file], new_state.whose_move) or \
             new_state.board[new_rank][king_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
         new_state[new_rank][king_file] = 0
 
@@ -69,14 +67,15 @@ def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitato
     freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, True)
 
 
-def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
-    # To capture a withdrawer, an imitator cannot leap over an enemy
-    is_not_leaping = new_state.board[new_rank - h_dir][new_file - v_dir] == 0
+# Used when imitator capture is disabled
+def imitator_dummy(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
+    pass  # do nothing
 
+
+def withdrawer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     r_behind, f_behind = rank - h_dir, file - v_dir
     if is_within_board(r_behind, f_behind) and \
             (not is_imitator and is_enemy(new_state.board[r_behind][f_behind], new_state.whose_move) or
-             is_not_leaping and
              new_state.board[r_behind][f_behind] - (1 - new_state.whose_move) == BC.BLACK_WITHDRAWER):
         new_state.board[r_behind][f_behind] = 0
 
@@ -117,12 +116,13 @@ def is_enemy(code, whose_move):
 # True if the selected piece is immobilized
 def is_immobilized(currentState, rank, file):
     is_freezer = currentState.board[rank][file] + (1 - currentState.whose_move) == BC.WHITE_FREEZER
+    imitator_on = CODE_TO_FUNC[BC.BLACK_IMITATOR] == imitator
     for i in range(8):
         h_dir, v_dir = DIRECTIONS[i]
         new_rank, new_file = rank + h_dir, file + v_dir
         if is_within_board(rank, file):
             code = currentState.board[new_rank][new_file] - (1 - currentState.whose_move)
-            if code == BC.BLACK_FREEZER or (is_freezer and code == BC.BLACK_IMITATOR):
+            if code == BC.BLACK_FREEZER or (is_freezer and imitator_on and code == BC.BLACK_IMITATOR):
                 return True
     return False
 
@@ -204,7 +204,7 @@ def move_a_piece(currentState, rank, file):
     return radix_sort(states_with_moves)
 
 
-# states_with_moves contains elements in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
+# states_with_moves contains items in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
 def radix_sort(states_with_moves: list) -> list:
     bin0 = [[] for i in range(8)]
     bin1 = [[] for i in range(8)]
@@ -232,54 +232,46 @@ def radix_sort(states_with_moves: list) -> list:
 def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
     if ply == 0:
-        return stat_dict
+        # Evaluate the leaf of the expansion
+        stat_dict['N_STATIC_EVALS'] += 1
+        return basicStaticEval(currentState)
+
     whose_move = currentState.whose_move
     provisional = -100000 if whose_move == BC.WHITE else 100000
 
-    # all possible moves that one side can take (move + capture)
-    for s in successors(currentState):
-        # update stat_dict based on the new state s
-        stat_dict['CURRENT_STATE_VAL'] = basicStaticEval(s)
-        stat_dict['N_STATES_EXPANDED'] += 1
-        stat_dict['N_STATIC_EVALS'] += 1
+    # Expand the state
+    stat_dict['N_STATES_EXPANDED'] += 1
+    for s in successors(currentState)[1]:
 
-        # Not sure if the updated stat_dict since it's already updated
-        stat_dict = minimax(s, stat_dict, False, ply - 1, True, False)
+        new_val = minimax(s, stat_dict, False, ply - 1, True, False)
 
-        if whose_move == BC.WHITE and stat_dict['CURRENT_STATE_VAL'] > provisional \
-        or whose_move == BC.BLACK and stat_dict['CURRENT_STATE_VAL'] < provisional:
+        if whose_move == BC.WHITE and new_val > provisional \
+                or whose_move == BC.BLACK and new_val < provisional:
             provisional = stat_dict['CURRENT_STATE_VAL']
 
-        return stat_dict
+    return provisional
 
 
 def successors(currentState):
-    # all possible moves that one side can take (move + capture)
+    # Item format: (((from_rank, from_file), (to_rank, to_file)), newState)
     all_states_with_moves = []
-    if currentState.whose_move == BC.WHITE: # WHITE's turn
-        for i in range(8):
-            for j in range(8):
-                if currentState.board[i][j] % 2 == 1: # WHITE piece
-                    all_states_with_moves.append(move_a_piece(currentState, i, j))
-    else: # BLACK's turn
-        for i in range(8):
-            for j in range(8):
-                if currentState.board[i][j] % 2 == 0: # BLACK piece
-                    all_states_with_moves.append(move_a_piece(currentState, i, j))
 
-    # all possible moves in the order of the new location of the moved piece
-    return radix_sort(all_states_with_moves)
+    for j in range(8):
+        for i in range(7, -1, -1):
+            if is_ally(currentState.board[i][j], currentState.whose_move):
+                all_states_with_moves.append(move_a_piece(currentState, i, j))
+
+    return all_states_with_moves
 
 
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
     capabilities here.'''
-    stat_dict = {"CURRENT_STATE_VAL": basicStaticEval(currentState),
-                 "N_STATES_EXPANDED": 0,
-                 "N_STATIC_EVALS": 1,
-                 "N_CUTOFFS": 0}
-    minimax(currentState, stat_dict, alphaBeta, ply, useBasicStaticEval, useZobristHashing)
+    stat_dict = {"CURRENT_STATE_VAL": None, "N_STATES_EXPANDED": 0, "N_STATIC_EVALS": 0, "N_CUTOFFS": 0}
+    stat_dict['CURRENT_STATE_VAL'] = minimax(currentState, stat_dict, alphaBeta, ply,
+                                             useBasicStaticEval, useZobristHashing)
+    return stat_dict
 
 
 def makeMove(currentState, currentRemark, timelimit=10):
@@ -317,7 +309,9 @@ def prepare(player2Nickname):
     the opponent agent, in case your agent can use it in some of
     the dialog responses.  Other than that, this function can be
     used for initializing data structures, if needed.'''
-    pass
+    # This agent implements the imitator move generator
+    global IMITATOR_CAPTURES_IMPLEMENTED
+    IMITATOR_CAPTURES_IMPLEMENTED = True
 
 
 def basicStaticEval(state):
@@ -337,3 +331,12 @@ def staticEval(state):
     function could have a significant impact on your player's ability
     to win games.'''
     pass
+
+
+def enable_imitator_captures(status=False):
+    if status:
+        CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator
+        CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator
+    else:
+        CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator_dummy
+        CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator_dummy
