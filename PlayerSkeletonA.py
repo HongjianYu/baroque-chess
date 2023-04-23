@@ -231,7 +231,7 @@ def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
     if ply == 0:
         # Evaluate the leaf of the expansion
         stat_dict['N_STATIC_EVALS'] += 1
-        return basicStaticEval(currentState)
+        return basicStaticEval(currentState) if useBasicStaticEval else staticEval(currentState)
 
     whose_move = currentState.whose_move
     provisional = -100000 if whose_move == BC.WHITE else 100000
@@ -294,11 +294,11 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
 
 def nickname():
-    return "Newman"
+    return "Switched-On Bach"
 
 
 def introduce():
-    return "I'm Newman Barry, a newbie Baroque Chess agent."
+    return "Make Baroque Great Again."
 
 
 def prepare(player2Nickname):
