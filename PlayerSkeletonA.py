@@ -209,8 +209,7 @@ def radix_sort(states_with_moves: list) -> list:
 
     # Order by ranks
     for item in states_with_moves:
-        # indexed in reverse order:
-        # (7, 6, 5, 4, 3, 2, 1, 0)
+        # indexed reversely: 7, 6, 5, 4, 3, 2, 1, 0
         # item[0][1][0]:
         # [0]: a tuple of two coordinates
         # [1]: the landing square coordinate
