@@ -78,8 +78,7 @@ def runGame():
         # Whoever's turn it is, well, move!
         who = currentState.whose_move
         if who == BC.WHITE:
-            side = 'WHITE';
-            other_side = 'BLACK'
+            side = 'WHITE'; other_side = 'BLACK'
         else:
             side = 'BLACK'; other_side = 'WHITE'
         global CURRENT_PLAYER
