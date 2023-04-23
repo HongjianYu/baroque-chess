@@ -344,4 +344,9 @@ def staticEval(state):
     This is intended for normal competitive play.  How you design this
     function could have a significant impact on your player's ability
     to win games.'''
-    pass
+    # this staticEval takes the number of options into account
+    # but it is time-consuming unless we have global variable for the number of options
+    alpha = 0.5 # weight of the basicStaticEval in the new staticEval
+    res = alpha * basicStaticEval(state) + (1 - alpha) * len(successors(state))
+
+    return res
