@@ -15,7 +15,6 @@ The two methods are:
 S. Tanimoto, May 5, 2019. (Based on prev. devel. of
 to_bc_move_validator.py, April 8, 2019)
 Changed web server on April 5, 2023.
-
 '''
 
 import urllib.request   

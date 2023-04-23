@@ -303,7 +303,7 @@ def introduce():
 
 
 def prepare(player2Nickname):
-    ''' Here the game master will give your agent the nickname of
+    '''Here the game master will give your agent the nickname of
     the opponent agent, in case your agent can use it in some of
     the dialog responses.  Other than that, this function can be
     used for initializing data structures, if needed.'''
