@@ -4,7 +4,6 @@ Switched-On Bach by Runying Chen and Hongjian Yu, Apr 24, 2023
 '''
 
 import BC_state_etc as BC
-
 IMITATOR_CAPTURES_IMPLEMENTED = None
 
 player2 = None
@@ -263,7 +262,6 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                                              useBasicStaticEval, useZobristHashing)
     return stat_dict
 
-
 def makeMove(currentState, currentRemark, timelimit=10):
     # Compute the new state for a move.
     # You should implement an anytime algorithm based on IDDFS.
@@ -347,6 +345,6 @@ def staticEval(state):
     # this staticEval takes the number of options into account
     # but it is time-consuming unless we have global variable for the number of options
     alpha = 0.5 # weight of the basicStaticEval in the new staticEval
-    res = alpha * basicStaticEval(state) + (1 - alpha) * len(successors(state))
+    res = alpha * basicStaticEval(state) - (1 - alpha) * len(successors(state))
 
     return res
