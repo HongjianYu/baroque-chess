@@ -1,5 +1,6 @@
 '''PlayerSkeletonA.py
 The beginnings of an agent that might someday play Baroque Chess.
+Switched-On Bach by Runying Chen and Hongjian Yu, Apr 24, 2023
 '''
 
 import BC_state_etc as BC
@@ -30,14 +31,14 @@ def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator)
     # left
     pince_capture_in_one_dir(new_rank, new_file - 1, new_rank, new_file - 2)
 
-    # right
-    pince_capture_in_one_dir(new_rank, new_file + 1, new_rank, new_file + 2)
+    # down
+    pince_capture_in_one_dir(new_rank + 1, new_file, new_rank + 2, new_file)
 
     # up
     pince_capture_in_one_dir(new_rank - 1, new_file, new_rank - 2, new_file)
 
-    # down
-    pince_capture_in_one_dir(new_rank + 1, new_file, new_rank + 2, new_file)
+    # right
+    pince_capture_in_one_dir(new_rank, new_file + 1, new_rank, new_file + 2)
 
 
 def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
