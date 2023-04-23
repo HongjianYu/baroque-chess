@@ -9,12 +9,6 @@ IMITATOR_CAPTURES_IMPLEMENTED = None
 
 player2 = None
 
-CODE_TO_FUNC = {}
-
-CODE_TO_VAL = {}
-
-DIRECTIONS = {}
-
 
 def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     # To capture a pincer, an imitator cannot move in diagonal directions
@@ -94,6 +88,16 @@ def king(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
 
 def freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     pass  # do nothing
+
+
+CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
+                3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
+
+CODE_TO_VAL = {0: 0,
+               2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
+               3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
+
+DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
 
 
 # True if the coordinate is legal
@@ -313,18 +317,6 @@ def prepare(player2Nickname):
     # This agent implements the imitator move generator
     global IMITATOR_CAPTURES_IMPLEMENTED
     IMITATOR_CAPTURES_IMPLEMENTED = True
-
-    global CODE_TO_FUNC
-    CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
-                    3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
-
-    global CODE_TO_VAL
-    CODE_TO_VAL = {0: 0,
-                   2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
-                   3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
-
-    global DIRECTIONS
-    DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
 
 
 def enable_imitator_captures(status=False):
