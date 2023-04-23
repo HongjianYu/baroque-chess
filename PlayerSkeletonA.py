@@ -202,29 +202,30 @@ def move_a_piece(currentState, rank, file):
     return radix_sort(states_with_moves)
 
 
-# states_with_moves contains items in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
+# Sort items in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
 def radix_sort(states_with_moves: list) -> list:
-    bin0 = [[] for i in range(8)]
-    bin1 = [[] for i in range(8)]
-    for i in range(len(states_with_moves)):
-        # in reverse order(7, 6, 5, 4, 3, 2, 1, 0)
-        # states_with_moves[i][0][0]:
-        # [i]: the i-th st_w_mov
-        # [0]: first item in st_w_mov[i], which is a tuple of tuples
-        # [1]: second tuple within the tuple, which is the landing square coordinate
-        # [0]: first item in st_w_mov[i][0][1], which is the rank(1, 2, ...)
-        bin0[7 - states_with_moves[i][0][1][0]].append(states_with_moves[i])
+    # Two sets of buckets
+    bin0, bin1 = [[] * 8], [[] * 8]
 
-    # traverse list
-    for i in range(8):
-        for j in range(len(bin0[i])):
-            bin1[bin0[i][j][0][1][1]].append(bin0[i][j])
+    # Order by ranks
+    for item in states_with_moves:
+        # indexed in reverse order:
+        # (7, 6, 5, 4, 3, 2, 1, 0)
+        # item[0][1][0]:
+        # [0]: a tuple of two coordinates
+        # [1]: the landing square coordinate
+        # [0]: the landing square rank
+        bin0[7 - item[0][1][0]].append(item)
 
-    # final result
-    res = []
-    for i in range(8):
-        res += bin1[i]
-    return res
+    # Order by files
+    for item in [item for bucket in bin0 for item in bucket]:
+        # item[0][1][1]:
+        # [0]: a tuple of two coordinates
+        # [1]: the landing square coordinate
+        # [0]: the landing square file
+        bin1[item[0][1][1]].append(item)
+
+    return [item for bucket in bin1 for item in bucket]
 
 
 def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
@@ -289,7 +290,7 @@ def successors(currentState):
     for j in range(8):
         for i in range(7, -1, -1):
             if is_ally(currentState.board[i][j], currentState.whose_move):
-                all_states_with_moves.append(move_a_piece(currentState, i, j))
+                all_states_with_moves += move_a_piece(currentState, i, j)
 
     return all_states_with_moves
 
