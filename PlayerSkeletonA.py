@@ -245,7 +245,7 @@ def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
 
         if whose_move == BC.WHITE and new_val > provisional \
                 or whose_move == BC.BLACK and new_val < provisional:
-            provisional = stat_dict['CURRENT_STATE_VAL']
+            provisional = new_val
 
     return provisional
 
