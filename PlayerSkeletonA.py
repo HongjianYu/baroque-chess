@@ -4,9 +4,9 @@ The beginnings of an agent that might someday play Baroque Chess.
 
 import BC_state_etc as BC
 
-player2 = None
-
 IMITATOR_CAPTURES_IMPLEMENTED = None
+
+player2 = None
 
 CODE_TO_FUNC = {}
 
