@@ -4,8 +4,15 @@ The beginnings of an agent that might someday play Baroque Chess.
 
 import BC_state_etc as BC
 
-# This agent implements the imitator move generator
-IMITATOR_CAPTURES_IMPLEMENTED = True
+player2 = None
+
+IMITATOR_CAPTURES_IMPLEMENTED = None
+
+CODE_TO_FUNC = {}
+
+CODE_TO_VAL = {}
+
+DIRECTIONS = {}
 
 
 def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
@@ -88,16 +95,6 @@ def freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator
     pass  # do nothing
 
 
-CODE_TO_VAL = {0: 0,
-               2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
-               3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
-
-DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
-
-CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
-                3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
-
-
 # True if the coordinate is legal
 def is_within_board(rank, file):
     return 0 <= rank < 8 and 0 <= file < 8
@@ -129,7 +126,7 @@ def is_immobilized(currentState, rank, file):
 
 # Possible moves in one direction
 # Leaper has one more possible landing square behind an enemy piece
-# King only moves one step forward
+# King only moves one step at max
 def explore_in_one_dir(currentState, rank, file, h_dir, v_dir):
     piece_func = CODE_TO_FUNC[currentState[rank][file]]
     is_leaper, is_imitator, is_king = piece_func == leaper, piece_func == imitator, piece_func == king
@@ -309,9 +306,24 @@ def prepare(player2Nickname):
     the opponent agent, in case your agent can use it in some of
     the dialog responses.  Other than that, this function can be
     used for initializing data structures, if needed.'''
+    global player2
+    player2 = player2Nickname
+
     # This agent implements the imitator move generator
     global IMITATOR_CAPTURES_IMPLEMENTED
     IMITATOR_CAPTURES_IMPLEMENTED = True
+
+    global CODE_TO_FUNC
+    CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
+                    3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
+
+    global CODE_TO_VAL
+    CODE_TO_VAL = {0: 0,
+                   2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
+                   3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
+
+    global DIRECTIONS
+    DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
 
 
 def basicStaticEval(state):
