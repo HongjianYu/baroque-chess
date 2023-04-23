@@ -163,7 +163,7 @@ def explore_in_one_dir(currentState, rank, file, h_dir, v_dir):
     return moves
 
 
-# The core function to call to generate a report on possible moves of a given piece
+# The core function to generate possible moves of a given piece
 def move_a_piece(currentState, rank, file):
     if is_immobilized(currentState, rank, file):
         return []
