@@ -250,18 +250,6 @@ def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
     return provisional
 
 
-def successors(currentState):
-    # Item format: (((from_rank, from_file), (to_rank, to_file)), newState)
-    all_states_with_moves = []
-
-    for j in range(8):
-        for i in range(7, -1, -1):
-            if is_ally(currentState.board[i][j], currentState.whose_move):
-                all_states_with_moves.append(move_a_piece(currentState, i, j))
-
-    return all_states_with_moves
-
-
 def parameterized_minimax(currentState, alphaBeta=False, ply=3,
                           useBasicStaticEval=True, useZobristHashing=False):
     '''Implement this testing function for your agent's basic
@@ -292,6 +280,18 @@ def makeMove(currentState, currentRemark, timelimit=10):
     newRemark = "I'll think harder in some future game. Here's my move"
 
     return [[move, newState], newRemark]
+
+
+def successors(currentState):
+    # Item format: (((from_rank, from_file), (to_rank, to_file)), newState)
+    all_states_with_moves = []
+
+    for j in range(8):
+        for i in range(7, -1, -1):
+            if is_ally(currentState.board[i][j], currentState.whose_move):
+                all_states_with_moves.append(move_a_piece(currentState, i, j))
+
+    return all_states_with_moves
 
 
 def nickname():
@@ -327,6 +327,15 @@ def prepare(player2Nickname):
     DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
 
 
+def enable_imitator_captures(status=False):
+    if status:
+        CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator
+        CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator
+    else:
+        CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator_dummy
+        CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator_dummy
+
+
 def basicStaticEval(state):
     '''Use the simple method for state evaluation described in the spec.
     This is typically used in parameterized_minimax calls to verify
@@ -344,12 +353,3 @@ def staticEval(state):
     function could have a significant impact on your player's ability
     to win games.'''
     pass
-
-
-def enable_imitator_captures(status=False):
-    if status:
-        CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator
-        CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator
-    else:
-        CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator_dummy
-        CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator_dummy
