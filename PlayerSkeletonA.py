@@ -4,6 +4,7 @@ Switched-On Bach by Runying Chen and Hongjian Yu, Apr 24, 2023
 '''
 
 import BC_state_etc as BC
+
 IMITATOR_CAPTURES_IMPLEMENTED = None
 
 player2 = None
@@ -69,7 +70,7 @@ def imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitato
 
 
 # Used when imitator capture is disabled
-def imitator_dummy(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
+def dummy_imitator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
     pass  # do nothing
 
 
@@ -92,9 +93,13 @@ def freezer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator
 CODE_TO_FUNC = {2: pincer, 4: coordinator, 6: leaper, 8: imitator, 10: withdrawer, 12: king, 14: freezer,
                 3: pincer, 5: coordinator, 7: leaper, 9: imitator, 11: withdrawer, 13: king, 15: freezer}
 
+BASIC_CODE_TO_VAL = {0: 0,
+                     2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
+                     3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
+
 CODE_TO_VAL = {0: 0,
-               2: -1, 4: -2, 6: -2, 8: -2, 10: -2, 12: -100, 14: -2,
-               3: 1, 5: 2, 7: 2, 9: 2, 11: 2, 13: 100, 15: 2}
+               2: -3, 4: -8, 6: -6, 8: -6, 10: -10, 12: -1000, 14: -12,
+               3: 3, 5: 8, 7: 6, 9: 6, 11: 10, 13: 1000, 15: 12}
 
 DIRECTIONS = {0: (-1, -1), 1: (-1, 0), 2: (-1, 1), 3: (0, -1), 4: (0, 1), 5: (1, -1), 6: (1, 0), 7: (1, 1)}
 
@@ -238,7 +243,7 @@ def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
         return basicStaticEval(currentState) if useBasicStaticEval else staticEval(currentState)
 
     whose_move = currentState.whose_move
-    provisional = -100000 if whose_move == BC.WHITE else 100000
+    provisional = -5000 if whose_move == BC.WHITE else 5000
 
     # Expand the state
     stat_dict['N_STATES_EXPANDED'] += 1
@@ -322,8 +327,8 @@ def enable_imitator_captures(status=False):
         CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator
         CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator
     else:
-        CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator_dummy
-        CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator_dummy
+        CODE_TO_FUNC[BC.WHITE_IMITATOR] = dummy_imitator
+        CODE_TO_FUNC[BC.BLACK_IMITATOR] = dummy_imitator
 
 
 def basicStaticEval(state):
@@ -333,7 +338,7 @@ def basicStaticEval(state):
     res = 0
     for i in range(8):
         for j in range(8):
-            res += CODE_TO_VAL[state.board[i][j]]
+            res += BASIC_CODE_TO_VAL[state.board[i][j]]
     return res
 
 
