@@ -5,8 +5,10 @@ Switched-On Bach by Runying Chen and Hongjian Yu, Apr 24, 2023
 
 import BC_state_etc as BC
 import threading
+import time
 
 IMITATOR_CAPTURES_IMPLEMENTED = None
+NUM_OPTIONS = [0]
 player2 = None
 
 
@@ -39,7 +41,8 @@ def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imit
     def find_king():
         for i in range(8):
             for j in range(8):
-                if new_state.board[i][j] + (1 - new_state.whose_move) == BC.WHITE_KING:
+                if new_state.board[i][j] + (1 - new_state.whose_move) == BC.WHITE_KING \
+                and (new_state.board[rank][file] - new_state.board[i][j]) % 2 == 0:
                     return i, j
         return None, None
 
@@ -250,6 +253,7 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
     # Expand the state
     stat_dict['N_STATES_EXPANDED'] += 1
     ss = successors(currentState)
+    NUM_OPTIONS[0] = len(ss)
     for s in ss:
         new_val = minimax(s[1], alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
 
@@ -283,6 +287,7 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
 # Make the best decision before timeout
 def makeMove(currentState, currentRemark, timelimit=10):
     # Initialize the best shot so far
+    start_time = time.time()
     best_move = [[((-1, -1), (-1, -1)), currentState], "Something went off."]
 
     def move():
@@ -305,6 +310,10 @@ def makeMove(currentState, currentRemark, timelimit=10):
                         or whose_move == BC.BLACK and val < best_val:
                     best_val = val
                     appointed_move = [s[0], s[1]]
+
+                    end_time = time.time()
+                    if end_time - start_time < 1e-4:
+                        return [appointed_move, "Okay, " + print_move(appointed_move[0]) + f". Imperfect but bizarre, {player2}."]
 
             best_move[0] = appointed_move
             best_move[1] = "Okay, " + print_move(appointed_move[0]) + f". Imperfect but bizarre, {player2}."
@@ -374,35 +383,35 @@ def staticEval(state):
     function could have a significant impact on your player's ability
     to win games.'''
 
-    # # for approximation of the number of options
-    # expect = lambda p, n: (p - 1)*((1 - p)**n - 1) / p
-    #
-    # # number of pieces on the board
-    # n = 0
-    # for i in range(8):
-    #     for j in range(8):
-    #         if state.board[i][j] != 0: n += 1
-    # p = 1 / (n - 1)
-    #
-    # # this staticEval takes the number of options(expected) into account
-    # alpha = 0.5 # weight of the basicStaticEval in the new staticEval
-    # '''
-    # opts = 0.0 # number of options
-    # for i in range(8):
-    #     for j in range(8):
-    #         if state.board[i][j] % 2 == state.whose_move:
-    #             opts += expect(p, i) + expect(p, 7 - i) # horizontal
-    #             opts += expect(p, j) + expect(p, 7 - j) # vertical
-    #             # diag
-    #             opts += expect(p, min(i, j))
-    #             opts += expect(p, min(7 - i, j))
-    #             opts += expect(p, min(i, 7 - j))
-    #             opts += expect(p, min(7 - i, 7 - j))
-    #
-    # res = alpha * basicStaticEval(state) - (1 - alpha) * opts
-    # '''
-    # res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS[0]
-    #
-    # return res
+    # for approximation of the number of options
+    expect = lambda p, n: (p - 1)*((1 - p)**n - 1) / p
 
-    return sum([CODE_TO_VAL[code] for row in state.board for code in row]) * len(successors(state))
+    # number of pieces on the board
+    n = 0
+    for i in range(8):
+        for j in range(8):
+            if state.board[i][j] != 0: n += 1
+    p = 1 / (n - 1)
+
+    # this staticEval takes the number of options(expected) into account
+    alpha = 0.2 # weight of the basicStaticEval in the new staticEval
+    '''
+    opts = 0.0 # number of options
+    for i in range(8):
+        for j in range(8):
+            if state.board[i][j] % 2 == state.whose_move:
+                opts += expect(p, i) + expect(p, 7 - i) # horizontal
+                opts += expect(p, j) + expect(p, 7 - j) # vertical
+                # diag
+                opts += expect(p, min(i, j))
+                opts += expect(p, min(7 - i, j))
+                opts += expect(p, min(i, 7 - j))
+                opts += expect(p, min(7 - i, 7 - j))
+
+    res = alpha * basicStaticEval(state) - (1 - alpha) * opts
+    '''
+    res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS[0]
+
+    return res
+
+    # return sum([CODE_TO_VAL[code] for row in state.board for code in row]) * len(successors(state))
