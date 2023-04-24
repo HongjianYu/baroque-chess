@@ -287,7 +287,7 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
 
 # Make the best decision before timeout
 def makeMove(currentState, currentRemark, timelimit=10):
-    start_time = time.time()
+    # start_time = time.time()
     # Initialize the best shot so far
     best_move = [[((-1, -1), (-1, -1)), currentState], "Something went off."]
 
@@ -304,7 +304,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
             for s in ss:
-                stat_dict = parameterized_minimax(s[1], True, i, False, False)
+                stat_dict = parameterized_minimax(s[1], True, i, True, False)
                 val = stat_dict['CURRENT_STATE_VAL']
                 # print(stat_dict['N_STATES_EXPANDED'])
                 # print(stat_dict['N_STATIC_EVALS'])
@@ -318,24 +318,25 @@ def makeMove(currentState, currentRemark, timelimit=10):
                 elif val == best_val:
                     appointed_move = [s[0], s[1]] if random.random() < 0.05 else appointed_move
 
-                end_time = time.time()
-                if timelimit - (end_time - start_time) < 1e-4:
-                    return best_move
+                # end_time = time.time()
+                # if timelimit - (end_time - start_time) < 0.3:
+                #     return best_move
 
             best_move[0] = appointed_move
             best_move[1] = f"Okay, {print_move(appointed_move[0])}. Imperfect but bizarre, {player2}."
+
+        # return best_move
 
     def print_move(movement):
         (from_rank, from_file), (to_rank, to_file) = movement
         return str(chr(ord('a') + from_file)) + str(8 - from_rank) + str(chr(ord('a') + to_file)) + str(8 - to_rank)
 
-    move()
-    return best_move
+    # move()
 
-    # move_thread = threading.Thread(target=move)
-    # move_thread.start()
-    # move_thread.join(0.1 * timelimit)
-    # return best_move
+    move_thread = threading.Thread(target=move)
+    move_thread.start()
+    move_thread.join(0.2 * timelimit)
+    return best_move
 
 
 def successors(currentState):
@@ -424,4 +425,4 @@ def staticEval(state):
     #
     # return res
 
-    return (sum([CODE_TO_VAL[code] for row in state.board for code in row]) + 0.5) * len(successors(state))
+    return (sum([CODE_TO_VAL[code] for row in state.board for code in row]) + 1e-4) / len(successors(state))
