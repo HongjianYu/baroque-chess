@@ -342,9 +342,31 @@ def staticEval(state):
     This is intended for normal competitive play.  How you design this
     function could have a significant impact on your player's ability
     to win games.'''
-    # this staticEval takes the number of options into account
-    # but it is time-consuming unless we have global variable for the number of options
+
+    # for approximation of the number of options
+    expect = lambda p, n: (p - 1)*((1 - p)**n - 1) / p
+
+    # number of pieces on the board
+    n = 0
+    for i in range(8):
+        for j in range(8):
+            if state.board[i][j] != 0: n += 1
+    p = 1 / (n - 1)
+
+    # this staticEval takes the number of options(expected) into account
     alpha = 0.5 # weight of the basicStaticEval in the new staticEval
-    res = alpha * basicStaticEval(state) - (1 - alpha) * len(successors(state))
+    opts = 0.0 # number of options
+    for i in range(8):
+        for j in range(8):
+            if state.board[i][j] % 2 == state.whose_move:
+                opts += expect(p, i) + expect(p, 7 - i) # horizontal
+                opts += expect(p, j) + expect(p, 7 - j) # vertical
+                # diag
+                opts += expect(p, min(i, j))
+                opts += expect(p, min(7 - i, j))
+                opts += expect(p, min(i, 7 - j))
+                opts += expect(p, min(7 - i, 7 - j))
+
+    res = alpha * basicStaticEval(state) - (1 - alpha) * opts
 
     return res
