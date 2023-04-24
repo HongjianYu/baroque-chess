@@ -258,14 +258,16 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
     for s in ss:
         new_val = minimax(s[1], alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
 
-        if whose_move == BC.WHITE and new_val > provisional:
-            provisional = new_val
+        if whose_move == BC.WHITE:
+            if new_val > provisional:
+                provisional = new_val
             if alphaBeta and provisional <= alpha:
                 break
             alpha = provisional
 
-        if whose_move == BC.BLACK and new_val < provisional:
-            provisional = new_val
+        if whose_move == BC.BLACK:
+            if new_val < provisional:
+                provisional = new_val
             if alphaBeta and provisional >= beta:
                 break
             beta = provisional
@@ -297,7 +299,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
             best_move[1] = "I believe I have no legal moves."
             return
 
-        for i in range(8):
+        for i in range(7):
             appointed_move = best_move[0]
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
@@ -311,6 +313,8 @@ def makeMove(currentState, currentRemark, timelimit=10):
                         or whose_move == BC.BLACK and val < best_val:
                     best_val = val
                     appointed_move = [s[0], s[1]]
+                    if i == 0:
+                        best_move[0] = appointed_move
                 elif val == best_val:
                     appointed_move = [s[0], s[1]] if random.random() < 0.05 else appointed_move
 
@@ -319,7 +323,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
                     #     return [appointed_move, "Okay, " + print_move(appointed_move[0]) + f". Imperfect but bizarre, {player2}."]
 
             best_move[0] = appointed_move
-            best_move[1] = "Okay, " + print_move(appointed_move[0]) + f". Imperfect but bizarre, {player2}."
+            best_move[1] = f"Okay, {print_move(appointed_move[0])}. Imperfect but bizarre, {player2}."
 
     def print_move(movement):
         (from_rank, from_file), (to_rank, to_file) = movement
@@ -330,7 +334,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
     move_thread = threading.Thread(target=move)
     move_thread.start()
-    move_thread.join(0.2 * timelimit)
+    move_thread.join(0.1 * timelimit)
     return best_move
 
 
@@ -420,4 +424,4 @@ def staticEval(state):
     #
     # return res
 
-    return sum([CODE_TO_VAL[code] for row in state.board for code in row]) * len(successors(state))
+    return (sum([CODE_TO_VAL[code] for row in state.board for code in row]) + 0.5) * len(successors(state))
