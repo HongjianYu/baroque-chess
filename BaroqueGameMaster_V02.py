@@ -11,8 +11,8 @@ import sys
 import BC_checker  # API for accessing web-based move validation.
 
 TIME_PER_MOVE = 1  # Default time limit is one second.
-TURN_LIMIT = 5  # Good for testing.
-# TURN_LIMIT = 100 # Terminates runaway games.
+# TURN_LIMIT = 5  # Good for testing.
+TURN_LIMIT = 100  # Terminates runaway games.
 
 # Get names of players and time limit from the command line.
 if len(sys.argv) > 1:
@@ -24,7 +24,7 @@ if len(sys.argv) > 1:
         TIME_PER_MOVE = float(sys.argv[3])
 else:
     import PlayerSkeletonA as player1
-    import PlayerSkeletonB as player2
+    import PlayerSkeletonA as player2
 
 import BC_state_etc as BC
 
@@ -209,7 +209,7 @@ def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
             try:
                 self.result = func(*args, **kwargs)
             except Exception as e:
-                print("Seems there was an exception during play by " + CURRENT_PLAYER + ":\n" + str(e))
+                print("Seems there was an exception during play by " + str(CURRENT_PLAYER) + ":\n" + str(e))
                 print(sys.exc_info())
                 self.result = default
 
@@ -223,7 +223,7 @@ def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
     if pt.is_alive():
         print("Took too long.")
         print("We are now terminating the game.")
-        print("Player " + CURRENT_PLAYER + " loses.")
+        print("Player " + str(CURRENT_PLAYER) + " loses.")
         # if USE_HTML: gameToHTML.reportResult("Player "+CURRENT_PLAYER+" took too long (%04f seconds) and thus loses." % diff)
         # if USE_HTML: gameToHTML.endHTML()
         exit()

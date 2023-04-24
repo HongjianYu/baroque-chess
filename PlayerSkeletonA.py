@@ -42,16 +42,18 @@ def coordinator(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imit
             for j in range(8):
                 if new_state.board[i][j] + (1 - new_state.whose_move) == BC.WHITE_KING:
                     return i, j
+        return None, None
 
     king_rank, king_file = find_king()
 
-    if not is_imitator and is_enemy(new_state.board[king_rank][new_file], new_state.whose_move) or \
-            new_state.board[king_rank][new_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
-        new_state[king_rank][new_file] = 0
+    if king_rank is not None and king_file is not None:
+        if not is_imitator and is_enemy(new_state.board[king_rank][new_file], new_state.whose_move) or \
+                new_state.board[king_rank][new_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
+            new_state.board[king_rank][new_file] = 0
 
-    if not is_imitator and is_enemy(new_state.board[new_rank][king_file], new_state.whose_move) or \
-            new_state.board[new_rank][king_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
-        new_state[new_rank][king_file] = 0
+        if not is_imitator and is_enemy(new_state.board[new_rank][king_file], new_state.whose_move) or \
+                new_state.board[new_rank][king_file] - (1 - new_state.whose_move) == BC.BLACK_COORDINATOR:
+            new_state.board[new_rank][king_file] = 0
 
 
 def leaper(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
@@ -213,9 +215,8 @@ def move_a_piece(currentState, rank, file):
 
 # Sort items in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
 def radix_sort(states_with_moves: list) -> list:
-    print([item[0] for item in states_with_moves])
     # Two sets of buckets
-    bin0, bin1 = [[] * 8], [[] * 8]
+    bin0, bin1 = [[] for _ in range(8)], [[] for _ in range(8)]
 
     # Order by ranks
     for item in states_with_moves:
@@ -251,9 +252,8 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
     stat_dict['N_STATES_EXPANDED'] += 1
     ss = successors(currentState)
     NUM_OPTIONS[0] = len(ss)
-    for s in ss[1]:
-
-        new_val = minimax(s, alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
+    for s in ss:
+        new_val = minimax(s[1], alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
 
         if whose_move == BC.WHITE and new_val > provisional:
             provisional = new_val
@@ -289,12 +289,16 @@ def makeMove(currentState, currentRemark, timelimit=10):
         whose_move = currentState.whose_move
         ss = successors(currentState)
 
+        if not ss:  # if there is no possible states
+            best_move[1] = "I believe I have no legal moves."
+            return
+
         for i in range(8):
-            appointed_move = best_move
+            appointed_move = best_move[0]
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
             for s in ss:
-                stat_dict = parameterized_minimax(currentState, False, i, True, False)
+                stat_dict = parameterized_minimax(s[1], False, i, True, False)
                 val = stat_dict['CURRENT_STATE_VAL']
 
                 if whose_move == BC.WHITE and val > best_val \
@@ -303,7 +307,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
                     appointed_move = [s[0], s[1]]
 
             best_move[0] = appointed_move
-            best_move[1] = "Okay, " + print_move(appointed_move[0][0]) + f". Imperfect but bizarre, {player2}."
+            best_move[1] = "Okay, " + print_move(appointed_move[0]) + f". Imperfect but bizarre, {player2}."
 
     def print_move(movement):
         (from_rank, from_file), (to_rank, to_file) = movement
@@ -320,7 +324,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
             return self.best_shot
 
     move_thread = MoveThread()
-    return move_thread.run(timelimit)
+    return move_thread.run(0.9 * timelimit)
 
 
 def successors(currentState):
