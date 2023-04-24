@@ -206,7 +206,7 @@ def move_a_piece(currentState, rank, file):
             new_state.board[new_rank][new_file] = code
             # Piece-dependent capture
             piece_func(new_state, rank, file, new_rank, new_file, h_dir, v_dir, False)
-            currentState.whose_move = 1 - currentState.whose_move
+            new_state.whose_move = 1 - currentState.whose_move
 
             states_with_moves.append((move, new_state))
 
@@ -315,7 +315,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
     move_thread = threading.Thread(target=move)
     move_thread.start()
-    move_thread.join(timelimit - 0.1)
+    move_thread.join(0.8 * timelimit)
     return best_move
 
 
