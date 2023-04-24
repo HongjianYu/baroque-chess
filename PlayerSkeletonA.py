@@ -8,7 +8,6 @@ import threading
 
 IMITATOR_CAPTURES_IMPLEMENTED = None
 NUM_OPTIONS = [0]
-
 player2 = None
 
 
@@ -128,7 +127,7 @@ def is_immobilized(currentState, rank, file):
     for i in range(8):
         h_dir, v_dir = DIRECTIONS[i]
         new_rank, new_file = rank + h_dir, file + v_dir
-        if is_within_board(rank, file):
+        if is_within_board(new_rank, new_file):
             code = currentState.board[new_rank][new_file] - (1 - currentState.whose_move)
             if code == BC.BLACK_FREEZER or (is_freezer and imitator_on and code == BC.BLACK_IMITATOR):
                 return True
@@ -139,7 +138,7 @@ def is_immobilized(currentState, rank, file):
 # Leaper has one more possible landing square behind an enemy piece
 # King only moves one step at max
 def explore_in_one_dir(currentState, rank, file, h_dir, v_dir):
-    piece_func = CODE_TO_FUNC[currentState[rank][file]]
+    piece_func = CODE_TO_FUNC[currentState.board[rank][file]]
     is_leaper, is_imitator, is_king = piece_func == leaper, piece_func == imitator, piece_func == king
 
     moves = []
@@ -180,7 +179,7 @@ def move_a_piece(currentState, rank, file):
         return []
 
     # Find what piece this is
-    code = currentState[rank][file]
+    code = currentState.board[rank][file]
     # Find its corresponding capture function
     piece_func = CODE_TO_FUNC[code]
 
@@ -214,6 +213,7 @@ def move_a_piece(currentState, rank, file):
 
 # Sort items in the format of (((from_rank, from_file), (to_rank, to_file)), newState)
 def radix_sort(states_with_moves: list) -> list:
+    print([item[0] for item in states_with_moves])
     # Two sets of buckets
     bin0, bin1 = [[] * 8], [[] * 8]
 
@@ -249,9 +249,9 @@ def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
 
     # Expand the state
     stat_dict['N_STATES_EXPANDED'] += 1
-    possible_states = successors(currentState)
-    NUM_OPTIONS[0] = len(possible_states)
-    for s in possible_states[1]:
+    ss = successors(currentState)
+    NUM_OPTIONS[0] = len(ss)
+    for s in ss[1]:
 
         new_val = minimax(s, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
 
@@ -273,8 +273,7 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
 
 
 def makeMove(currentState, currentRemark, timelimit=10):
-    # Compute the new state for a move.
-    # You should implement an anytime algorithm based on IDDFS.
+    # Make the best decision before timeout.
     best_move = [[((-1, -1), (-1, -1)), currentState], "Something went off."]
 
     def move():
@@ -282,15 +281,16 @@ def makeMove(currentState, currentRemark, timelimit=10):
         ss = successors(currentState)
 
         for i in range(8):
-            appointed_move = ((-1, -1), (-1, -1))
+            appointed_move = best_move
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
             for s in ss:
                 stat_dict = parameterized_minimax(currentState, False, i, True, False)
+                val = stat_dict['CURRENT_STATE_VAL']
 
-                if whose_move == BC.WHITE and stat_dict['CURRENT_STATE_VAL'] > best_val \
-                        or whose_move == BC.BLACK and stat_dict['CURRENT_STATE_VAL'] < best_val:
-                    best_val = stat_dict
+                if whose_move == BC.WHITE and val > best_val \
+                        or whose_move == BC.BLACK and val < best_val:
+                    best_val = val
                     appointed_move = [s[0], s[1]]
 
             best_move[0] = appointed_move
@@ -399,3 +399,5 @@ def staticEval(state):
     res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS
 
     return res
+
+    # return sum([CODE_TO_VAL[code] for row in state.board for code in row]) * len(successors(state))

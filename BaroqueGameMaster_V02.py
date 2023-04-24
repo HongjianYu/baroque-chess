@@ -220,7 +220,7 @@ def timeout(func, args=(), kwargs={}, timeout_duration=1, default=None):
     ended_at = time.time()
     diff = ended_at - started_at
     print("Time used in makeMove: %0.4f seconds out of " % diff, timeout_duration)
-    if pt.isAlive():
+    if pt.is_alive():
         print("Took too long.")
         print("We are now terminating the game.")
         print("Player " + CURRENT_PLAYER + " loses.")
