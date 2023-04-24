@@ -280,8 +280,9 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
     return stat_dict
 
 
+# Make the best decision before timeout
 def makeMove(currentState, currentRemark, timelimit=10):
-    # Make the best decision before timeout.
+    # Initialize the best shot so far
     best_move = [[((-1, -1), (-1, -1)), currentState], "Something went off."]
 
     def move():
@@ -404,7 +405,7 @@ def staticEval(state):
 
     res = alpha * basicStaticEval(state) - (1 - alpha) * opts
     '''
-    res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS
+    res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS[0]
 
     return res
 
