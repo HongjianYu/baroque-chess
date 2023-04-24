@@ -313,18 +313,10 @@ def makeMove(currentState, currentRemark, timelimit=10):
         (from_rank, from_file), (to_rank, to_file) = movement
         return str(chr(ord('a') + from_file)) + str(from_rank) + str(chr(ord('a') + to_file)) + str(to_rank)
 
-    class MoveThread:
-        def __init__(self):
-            self.best_shot = best_move
-
-        def run(self, timeout):
-            thread = threading.Thread(target=move)
-            thread.start()
-            thread.join(timeout)
-            return self.best_shot
-
-    move_thread = MoveThread()
-    return move_thread.run(0.9 * timelimit)
+    move_thread = threading.Thread(target=move)
+    move_thread.start()
+    move_thread.join(timelimit - 0.1)
+    return best_move
 
 
 def successors(currentState):
