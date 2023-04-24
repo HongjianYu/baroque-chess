@@ -237,7 +237,7 @@ def radix_sort(states_with_moves: list) -> list:
     return [item for bucket in bin1 for item in bucket]
 
 
-def minimax(currentState, stat_dict, alpha, beta, alphaBeta=False, ply=3,
+def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
     if ply == 0:
         # Evaluate the leaf of the expansion
@@ -253,7 +253,7 @@ def minimax(currentState, stat_dict, alpha, beta, alphaBeta=False, ply=3,
     NUM_OPTIONS[0] = len(ss)
     for s in ss[1]:
 
-        new_val = minimax(s, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
+        new_val = minimax(s, alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
 
         if whose_move == BC.WHITE and new_val > provisional:
             provisional = new_val
@@ -275,7 +275,7 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
     '''Implement this testing function for your agent's basic
     capabilities here.'''
     stat_dict = {"CURRENT_STATE_VAL": None, "N_STATES_EXPANDED": 0, "N_STATIC_EVALS": 0, "N_CUTOFFS": 0}
-    stat_dict['CURRENT_STATE_VAL'] = minimax(currentState, stat_dict, -10000, 10000, alphaBeta, ply,
+    stat_dict['CURRENT_STATE_VAL'] = minimax(currentState, -5000, 5000, stat_dict, alphaBeta, ply,
                                              useBasicStaticEval, useZobristHashing)
     return stat_dict
 
