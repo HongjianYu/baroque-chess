@@ -24,7 +24,7 @@ if len(sys.argv) > 1:
         TIME_PER_MOVE = float(sys.argv[3])
 else:
     import PlayerSkeletonA as player1
-    import PlayerSkeletonA as player2
+    import PlayerSkeletonB as player2
 
 import BC_state_etc as BC
 

@@ -7,7 +7,6 @@ import BC_state_etc as BC
 import threading
 
 IMITATOR_CAPTURES_IMPLEMENTED = None
-NUM_OPTIONS = [0]
 player2 = None
 
 
@@ -251,7 +250,6 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
     # Expand the state
     stat_dict['N_STATES_EXPANDED'] += 1
     ss = successors(currentState)
-    NUM_OPTIONS[0] = len(ss)
     for s in ss:
         new_val = minimax(s[1], alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
 
@@ -259,13 +257,15 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
             provisional = new_val
             if alphaBeta:
                 alpha = max(alpha, provisional)
-                if beta <= alpha: break
+                if beta <= alpha:
+                    break
 
         if whose_move == BC.BLACK and new_val < provisional:
             provisional = new_val
             if alphaBeta:
                 beta = min(beta, provisional)
-                if beta <= alpha: break
+                if beta <= alpha:
+                    break
 
     return provisional
 
@@ -315,7 +315,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
     move_thread = threading.Thread(target=move)
     move_thread.start()
-    move_thread.join(0.8 * timelimit)
+    move_thread.join(0.2 * timelimit)
     return best_move
 
 
@@ -374,35 +374,35 @@ def staticEval(state):
     function could have a significant impact on your player's ability
     to win games.'''
 
-    # for approximation of the number of options
-    expect = lambda p, n: (p - 1)*((1 - p)**n - 1) / p
+    # # for approximation of the number of options
+    # expect = lambda p, n: (p - 1)*((1 - p)**n - 1) / p
+    #
+    # # number of pieces on the board
+    # n = 0
+    # for i in range(8):
+    #     for j in range(8):
+    #         if state.board[i][j] != 0: n += 1
+    # p = 1 / (n - 1)
+    #
+    # # this staticEval takes the number of options(expected) into account
+    # alpha = 0.5 # weight of the basicStaticEval in the new staticEval
+    # '''
+    # opts = 0.0 # number of options
+    # for i in range(8):
+    #     for j in range(8):
+    #         if state.board[i][j] % 2 == state.whose_move:
+    #             opts += expect(p, i) + expect(p, 7 - i) # horizontal
+    #             opts += expect(p, j) + expect(p, 7 - j) # vertical
+    #             # diag
+    #             opts += expect(p, min(i, j))
+    #             opts += expect(p, min(7 - i, j))
+    #             opts += expect(p, min(i, 7 - j))
+    #             opts += expect(p, min(7 - i, 7 - j))
+    #
+    # res = alpha * basicStaticEval(state) - (1 - alpha) * opts
+    # '''
+    # res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS[0]
+    #
+    # return res
 
-    # number of pieces on the board
-    n = 0
-    for i in range(8):
-        for j in range(8):
-            if state.board[i][j] != 0: n += 1
-    p = 1 / (n - 1)
-
-    # this staticEval takes the number of options(expected) into account
-    alpha = 0.5 # weight of the basicStaticEval in the new staticEval
-    '''
-    opts = 0.0 # number of options
-    for i in range(8):
-        for j in range(8):
-            if state.board[i][j] % 2 == state.whose_move:
-                opts += expect(p, i) + expect(p, 7 - i) # horizontal
-                opts += expect(p, j) + expect(p, 7 - j) # vertical
-                # diag
-                opts += expect(p, min(i, j))
-                opts += expect(p, min(7 - i, j))
-                opts += expect(p, min(i, 7 - j))
-                opts += expect(p, min(7 - i, 7 - j))
-
-    res = alpha * basicStaticEval(state) - (1 - alpha) * opts
-    '''
-    res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS[0]
-
-    return res
-
-    # return sum([CODE_TO_VAL[code] for row in state.board for code in row]) * len(successors(state))
+    return sum([CODE_TO_VAL[code] for row in state.board for code in row]) * len(successors(state))
