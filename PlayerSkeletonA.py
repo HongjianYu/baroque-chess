@@ -261,16 +261,16 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
         if whose_move == BC.WHITE:
             if new_val > provisional:
                 provisional = new_val
-            if alphaBeta and provisional <= alpha:
+                alpha = max(alpha, provisional)
+            if alphaBeta and provisional < alpha:
                 break
-            alpha = provisional
 
         if whose_move == BC.BLACK:
             if new_val < provisional:
                 provisional = new_val
-            if alphaBeta and provisional >= beta:
+                beta = min(beta, provisional)
+            if alphaBeta and provisional > beta:
                 break
-            beta = provisional
 
     return provisional
 
@@ -319,7 +319,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
                     appointed_move = [s[0], s[1]] if random.random() < 0.05 else appointed_move
 
                 end_time = time.time()
-                if timelimit - (end_time - start_time) < 1e-2:
+                if timelimit - (end_time - start_time) < 1e-4:
                     return best_move
 
             best_move[0] = appointed_move
