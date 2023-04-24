@@ -6,6 +6,7 @@ Switched-On Bach by Runying Chen and Hongjian Yu, Apr 24, 2023
 import BC_state_etc as BC
 
 IMITATOR_CAPTURES_IMPLEMENTED = None
+NUM_OPTIONS = [0]
 
 player2 = None
 
@@ -247,7 +248,9 @@ def minimax(currentState, stat_dict, alphaBeta=False, ply=3,
 
     # Expand the state
     stat_dict['N_STATES_EXPANDED'] += 1
-    for s in successors(currentState)[1]:
+    possible_states = successors(currentState)
+    NUM_OPTIONS[0] = len(possible_states)
+    for s in possible_states[1]:
 
         new_val = minimax(s, stat_dict, False, ply - 1, True, False)
 
@@ -360,6 +363,7 @@ def staticEval(state):
 
     # this staticEval takes the number of options(expected) into account
     alpha = 0.5 # weight of the basicStaticEval in the new staticEval
+    '''
     opts = 0.0 # number of options
     for i in range(8):
         for j in range(8):
@@ -373,5 +377,7 @@ def staticEval(state):
                 opts += expect(p, min(7 - i, 7 - j))
 
     res = alpha * basicStaticEval(state) - (1 - alpha) * opts
+    '''
+    res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS
 
     return res
