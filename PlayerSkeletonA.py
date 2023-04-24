@@ -315,7 +315,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
     move_thread = threading.Thread(target=move)
     move_thread.start()
-    move_thread.join(0.2 * timelimit)
+    move_thread.join(0.9 * timelimit)
     return best_move
 
 
