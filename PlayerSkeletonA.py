@@ -9,8 +9,11 @@ import threading
 import time
 
 IMITATOR_CAPTURES_IMPLEMENTED = None
-NUM_OPTIONS = [0]
+# NUM_OPTIONS = [0]
 player2 = None
+
+START_TIME = 0.0
+END_TIME = 0.0
 
 
 def pincer(new_state, rank, file, new_rank, new_file, h_dir, v_dir, is_imitator):
@@ -243,6 +246,10 @@ def radix_sort(states_with_moves: list) -> list:
 
 def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
+    global END_TIME
+    if END_TIME - time.time() < 0.5:
+        return 12345678
+
     if ply == 0:
         # Evaluate the leaf of the expansion
         stat_dict['N_STATIC_EVALS'] += 1
@@ -254,9 +261,11 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
     # Expand the state
     stat_dict['N_STATES_EXPANDED'] += 1
     ss = successors(currentState)
-    NUM_OPTIONS[0] = len(ss)
+    # NUM_OPTIONS[0] = len(ss)
     for s in ss:
         new_val = minimax(s[1], alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
+        if new_val == 12345678:
+            return 12345678
 
         if whose_move == BC.WHITE:
             if new_val > provisional:
@@ -287,7 +296,11 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
 
 # Make the best decision before timeout
 def makeMove(currentState, currentRemark, timelimit=10):
-    # start_time = time.time()
+    global START_TIME
+    START_TIME = time.time()
+    global END_TIME
+    END_TIME = time.time() + timelimit
+
     # Initialize the best shot so far
     best_move = [[((-1, -1), (-1, -1)), currentState], "Something went off."]
 
@@ -299,13 +312,19 @@ def makeMove(currentState, currentRemark, timelimit=10):
             best_move[1] = "I believe I have no legal moves."
             return
 
-        for i in range(8):
+        i = 0
+
+        # for i in range(8):
+        while END_TIME - time.time() > 0.5:
             appointed_move = best_move[0]
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
             for s in ss:
                 stat_dict = parameterized_minimax(s[1], True, i, True, False)
                 val = stat_dict['CURRENT_STATE_VAL']
+
+                if val == 12345678:
+                    return best_move
                 # print(stat_dict['N_STATES_EXPANDED'])
                 # print(stat_dict['N_STATIC_EVALS'])
 
@@ -318,25 +337,23 @@ def makeMove(currentState, currentRemark, timelimit=10):
                 elif val == best_val:
                     appointed_move = [s[0], s[1]] if random.random() < 0.05 else appointed_move
 
-                # end_time = time.time()
-                # if timelimit - (end_time - start_time) < 0.3:
-                #     return best_move
+                best_move[0] = appointed_move
+                best_move[1] = f"Okay, {print_move(appointed_move[0])}. Imperfect but bizarre, {player2}."
 
-            best_move[0] = appointed_move
-            best_move[1] = f"Okay, {print_move(appointed_move[0])}. Imperfect but bizarre, {player2}."
+            i += 1
 
-        # return best_move
+        return best_move
 
     def print_move(movement):
         (from_rank, from_file), (to_rank, to_file) = movement
         return str(chr(ord('a') + from_file)) + str(8 - from_rank) + str(chr(ord('a') + to_file)) + str(8 - to_rank)
 
-    # move()
+    move()
 
-    move_thread = threading.Thread(target=move)
-    move_thread.start()
-    move_thread.join(0.2 * timelimit)
-    return best_move
+    # move_thread = threading.Thread(target=move)
+    # move_thread.start()
+    # move_thread.join(0.2 * timelimit)
+    # return best_move
 
 
 def successors(currentState):
