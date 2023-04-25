@@ -313,7 +313,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
             for s in ss:
-                stat_dict = parameterized_minimax(s[1], True, i, False, False)
+                stat_dict = parameterized_minimax(s[1], True, i, True, False)
                 val = stat_dict['CURRENT_STATE_VAL']
 
                 if val is None:
@@ -402,4 +402,4 @@ def staticEval(state):
     This is intended for normal competitive play.  How you design this
     function could have a significant impact on your player's ability
     to win games.'''
-    return (sum([CODE_TO_VAL[code] for row in state.board for code in row]) + 1e-4) / len(successors(state))
+    return (sum([CODE_TO_VAL[code] for row in state.board for code in row]) + 1e-4) / (len(successors(state)) + 1e-4)
