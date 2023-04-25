@@ -310,7 +310,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
         if not ss:  # if there is no possible states
             best_move[1] = "I believe I have no legal moves."
-            return
+            return best_move
 
         i = 0
 
@@ -348,7 +348,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
         (from_rank, from_file), (to_rank, to_file) = movement
         return str(chr(ord('a') + from_file)) + str(8 - from_rank) + str(chr(ord('a') + to_file)) + str(8 - to_rank)
 
-    move()
+    return move()
 
     # move_thread = threading.Thread(target=move)
     # move_thread.start()
