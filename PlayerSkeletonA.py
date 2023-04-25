@@ -11,8 +11,6 @@ import time
 IMITATOR_CAPTURES_IMPLEMENTED = None
 # NUM_OPTIONS = [0]
 player2 = None
-
-START_TIME = 0.0
 END_TIME = 0.0
 
 
@@ -247,8 +245,8 @@ def radix_sort(states_with_moves: list) -> list:
 def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
             useBasicStaticEval=True, useZobristHashing=False):
     global END_TIME
-    if END_TIME - time.time() < 0.5:
-        return 12345678
+    if END_TIME - time.time() < 0.1:
+        return None
 
     if ply == 0:
         # Evaluate the leaf of the expansion
@@ -264,8 +262,9 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
     # NUM_OPTIONS[0] = len(ss)
     for s in ss:
         new_val = minimax(s[1], alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
-        if new_val == 12345678:
-            return 12345678
+
+        if new_val is None:
+            return None
 
         if whose_move == BC.WHITE:
             if new_val > provisional:
@@ -296,8 +295,6 @@ def parameterized_minimax(currentState, alphaBeta=False, ply=3,
 
 # Make the best decision before timeout
 def makeMove(currentState, currentRemark, timelimit=10):
-    global START_TIME
-    START_TIME = time.time()
     global END_TIME
     END_TIME = time.time() + timelimit
 
@@ -315,7 +312,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
         i = 0
 
         # for i in range(8):
-        while END_TIME - time.time() > 0.5:
+        while END_TIME - time.time() > 0.1:
             appointed_move = best_move[0]
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
@@ -323,7 +320,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
                 stat_dict = parameterized_minimax(s[1], True, i, True, False)
                 val = stat_dict['CURRENT_STATE_VAL']
 
-                if val == 12345678:
+                if val is None:
                     return best_move
                 # print(stat_dict['N_STATES_EXPANDED'])
                 # print(stat_dict['N_STATIC_EVALS'])
@@ -393,9 +390,13 @@ def enable_imitator_captures(status=False):
     if status:
         CODE_TO_FUNC[BC.WHITE_IMITATOR] = imitator
         CODE_TO_FUNC[BC.BLACK_IMITATOR] = imitator
+        CODE_TO_VAL[BC.WHITE_IMITATOR] = 6
+        CODE_TO_VAL[BC.BLACK_IMITATOR] = -6
     else:
         CODE_TO_FUNC[BC.WHITE_IMITATOR] = dummy_imitator
         CODE_TO_FUNC[BC.BLACK_IMITATOR] = dummy_imitator
+        CODE_TO_VAL[BC.WHITE_IMITATOR] = 1
+        CODE_TO_VAL[BC.BLACK_IMITATOR] = -1
 
 
 def basicStaticEval(state):

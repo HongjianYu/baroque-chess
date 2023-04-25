@@ -152,10 +152,10 @@ def makeMove(currentState, mcurrentRemark, timelimit=10):
 
     # IDDFS
     depth = 1
-    while time.time() - start < timelimit - 0.5:
+    while time.time() - start < timelimit - 0.1:
         for m in moves:
             moves[m] = DLS(move(currentState, m), depth, timelimit, start)
-            if time.time() - start > timelimit - 0.5:
+            if time.time() - start > timelimit - 0.1:
                 break
         depth += 1
 
@@ -187,7 +187,7 @@ def DLS(currentState, depth, timelimit, start, alpha = float(-100000), beta = fl
         y = 7 - y
         for x in range(len(currentState.board[y])):
             for m in get_moves(currentState, (y, x)):
-                if time.time() - start > timelimit - 0.5:
+                if time.time() - start > timelimit - 0.1:
                     return provisional
                 successor = move(currentState, m)
                 if successor is not None:
