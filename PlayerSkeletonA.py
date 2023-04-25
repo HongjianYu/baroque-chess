@@ -313,7 +313,7 @@ def makeMove(currentState, currentRemark, timelimit=10):
             best_val = -5000 if whose_move == BC.WHITE else 5000
 
             for s in ss:
-                stat_dict = parameterized_minimax(s[1], True, i, True, False)
+                stat_dict = parameterized_minimax(s[1], True, i, False, False)
                 val = stat_dict['CURRENT_STATE_VAL']
 
                 if val is None:
