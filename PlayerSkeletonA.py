@@ -5,11 +5,9 @@ Switched-On Bach by Runying Chen and Hongjian Yu, Apr 24, 2023
 
 import BC_state_etc as BC
 import random
-import threading
 import time
 
 IMITATOR_CAPTURES_IMPLEMENTED = None
-# NUM_OPTIONS = [0]
 player2 = None
 END_TIME = 0.0
 
@@ -259,7 +257,6 @@ def minimax(currentState, alpha, beta, stat_dict, alphaBeta=False, ply=3,
     # Expand the state
     stat_dict['N_STATES_EXPANDED'] += 1
     ss = successors(currentState)
-    # NUM_OPTIONS[0] = len(ss)
     for s in ss:
         new_val = minimax(s[1], alpha, beta, stat_dict, alphaBeta, ply - 1, useBasicStaticEval, useZobristHashing)
 
@@ -311,7 +308,6 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
         i = 0
 
-        # for i in range(8):
         while END_TIME - time.time() > 0.1:
             appointed_move = best_move[0]
             best_val = -5000 if whose_move == BC.WHITE else 5000
@@ -322,8 +318,6 @@ def makeMove(currentState, currentRemark, timelimit=10):
 
                 if val is None:
                     return best_move
-                # print(stat_dict['N_STATES_EXPANDED'])
-                # print(stat_dict['N_STATIC_EVALS'])
 
                 if whose_move == BC.WHITE and val > best_val \
                         or whose_move == BC.BLACK and val < best_val:
@@ -346,11 +340,6 @@ def makeMove(currentState, currentRemark, timelimit=10):
         return str(chr(ord('a') + from_file)) + str(8 - from_rank) + str(chr(ord('a') + to_file)) + str(8 - to_rank)
 
     return move()
-
-    # move_thread = threading.Thread(target=move)
-    # move_thread.start()
-    # move_thread.join(0.2 * timelimit)
-    # return best_move
 
 
 def successors(currentState):
@@ -385,6 +374,8 @@ def prepare(player2Nickname):
     global IMITATOR_CAPTURES_IMPLEMENTED
     IMITATOR_CAPTURES_IMPLEMENTED = True
 
+    # enable_imitator_captures(False)
+
 
 def enable_imitator_captures(status=False):
     if status:
@@ -411,36 +402,4 @@ def staticEval(state):
     This is intended for normal competitive play.  How you design this
     function could have a significant impact on your player's ability
     to win games.'''
-
-    # # for approximation of the number of options
-    # expect = lambda p, n: (p - 1)*((1 - p)**n - 1) / p
-    #
-    # # number of pieces on the board
-    # n = 0
-    # for i in range(8):
-    #     for j in range(8):
-    #         if state.board[i][j] != 0: n += 1
-    # p = 1 / (n - 1)
-    #
-    # # this staticEval takes the number of options(expected) into account
-    # alpha = 0.2 # weight of the basicStaticEval in the new staticEval
-    # '''
-    # opts = 0.0 # number of options
-    # for i in range(8):
-    #     for j in range(8):
-    #         if state.board[i][j] % 2 == state.whose_move:
-    #             opts += expect(p, i) + expect(p, 7 - i) # horizontal
-    #             opts += expect(p, j) + expect(p, 7 - j) # vertical
-    #             # diag
-    #             opts += expect(p, min(i, j))
-    #             opts += expect(p, min(7 - i, j))
-    #             opts += expect(p, min(i, 7 - j))
-    #             opts += expect(p, min(7 - i, 7 - j))
-    #
-    # res = alpha * basicStaticEval(state) - (1 - alpha) * opts
-    # '''
-    # res = alpha * basicStaticEval(state) - (1 - alpha) * NUM_OPTIONS[0]
-    #
-    # return res
-
     return (sum([CODE_TO_VAL[code] for row in state.board for code in row]) + 1e-4) / len(successors(state))
