@@ -1,1 +1,1 @@
-# baroque-chess-agents
+# baroque-chess
